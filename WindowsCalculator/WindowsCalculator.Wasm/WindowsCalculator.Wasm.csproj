@@ -6,6 +6,7 @@
     <WasmHead>true</WasmHead>
     <DefineConstants>$(DefineConstants);__WASM__</DefineConstants>
     <NoWarn>NU1701</NoWarn>
+    <BuildingInsideUnoSourceGenerator>true</BuildingInsideUnoSourceGenerator>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="..\WindowsCalculator.UWP\Assets\*.png" Link="Assets\%(FileName)%(Extension)" />
@@ -30,8 +31,8 @@
     <Content Include="LinkerConfig.xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Uno.UI" Version="1.42.0" />
-    <PackageReference Include="Uno.Wasm.Bootstrap" Version="1.0.0-dev.58" />
+    <PackageReference Include="Uno.UI" Version="1.45.0-dev.1455" />
+    <PackageReference Include="Uno.Wasm.Bootstrap" Version="1.0.0-dev.269" />
   </ItemGroup>
   <Import Project="..\WindowsCalculator.Shared\WindowsCalculator.Shared.projitems" Label="Shared" Condition="Exists('..\WindowsCalculator.Shared\WindowsCalculator.Shared.projitems')" />
 </Project>

@@ -1,70 +1,70 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+using CalculatorApp;
+using CalculatorApp.Common;
+using CalculatorApp.Common.Automation;
+using CalculatorApp.ViewModel;
+using Platform;
+using std;
+using Windows.Foundation;
+using Windows.Storage;
+using Windows.Storage.Streams;
+using Windows.Security.Cryptography;
+using Windows.Foundation.Collections;
+using System.ComponentModel;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Interop;
+using System;
 
-namespace WindowsCalculator.Shared.ViewModels
+namespace CalculatorApp
 {
-	[Bindable]
-	sealed public class MemoryItemViewModel; INotifyPropertyChanged, ICustomPropertyProvider
-	{
-		/* MAX?
-		ref class StandardCalculatorViewModel;
-		*/
+    namespace ViewModel
+    {
 
-		/// <summary>
-		/// Model representation of a single item in the Memory list
-		/// </summary>
-        public MemoryItemViewModel(StandardCalculatorViewModel calcVM) : m_Position(-1), m_calcVM(calcVM)
-		{
 
-		}
 
-		public virtual int Position { get; set; }
-		public virtual string Value { get; set; }
+        /// <summary>
+        /// Model representation of a single item in the Memory list
+        /// </summary>
+        [Windows.UI.Xaml.Data.Bindable]
+        public class MemoryItemViewModel : INotifyPropertyChanged, ICustomPropertyProvider
+        {
+            StandardCalculatorViewModel m_calcVM;
 
-		public virtual ICustomProperty GetCustomProperty(string name)
-		{
-			return null;
-		}
+            public MemoryItemViewModel(StandardCalculatorViewModel calcVM)
+            {
+                m_Position = -1;
+                m_calcVM = calcVM;
+            }
 
-		public virtual ICustomProperty GetIndexedProperty(string name, TypeName type)
-		{
-			return null;
-		}
+            public event PropertyChangedEventHandler PropertyChanged;
 
-		public virtual TypeName Type
-		{
-			get{ return this.GetType(); }
-		}
+            private void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName]string p = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(p));
+            private int m_Position;
+            public int Position { get => m_Position; set { m_Position = value; RaisePropertyChanged("Position"); } }
 
-		public virtual string GetStringRepresentation()
-		{
-			return Value;
-		}
+            private string m_Value;
+            public string Value { get => m_Value; set { m_Value = value; RaisePropertyChanged("Value"); } }
 
-		public void Clear();
-		public void MemoryAdd();
-		public void MemorySubtract();
+            public Type Type => GetType();
+            public ICustomProperty GetCustomProperty(string name) => null;
+            public ICustomProperty GetIndexedProperty(string name, Type type) => null;
+            public string GetStringRepresentation() => Value;
 
-		private StandardCalculatorViewModel m_calcVM;
+            void Clear()
+            {
+                m_calcVM.OnMemoryClear(Position);
+            }
+
+            void MemoryAdd()
+            {
+                m_calcVM.OnMemoryAdd(Position);
+            }
+
+            void MemorySubtract()
+            {
+                m_calcVM.OnMemorySubtract(Position);
+            }
+        }
+    }
 }
-/*
-
-void MemoryItemViewModel::Clear()
-{
-    m_calcVM->OnMemoryClear(Position);
-};
-
-void MemoryItemViewModel::MemoryAdd()
-{
-    m_calcVM->OnMemoryAdd(Position);
-};
-
-void MemoryItemViewModel::MemorySubtract()
-{
-    m_calcVM->OnMemorySubtract(Position);
-};
-
-*/
