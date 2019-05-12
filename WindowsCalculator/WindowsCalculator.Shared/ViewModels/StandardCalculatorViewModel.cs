@@ -16,19 +16,21 @@ using Windows.UI.Core;
 using Windows.UI.Popups;
 using Windows.Storage.Streams;
 using Windows.Foundation.Collections;
-using Utils;
+using static CalculatorApp.Utils;
 using System;
 using System.ComponentModel;
 using System.Windows.Input;
 using System.Collections.Generic;
+using static CalculatorApp.CCommand;
 
 namespace CalculatorApp.ViewModel
 {
     public class StandardCalculatorViewModel : INotifyPropertyChanged
     {
-        int StandardModePrecision = 16;
-        int ScientificModePrecision = 32;
-        int ProgrammerModePrecision = 64;
+        const int ASCII_0 = 48;
+        const int StandardModePrecision = 16;
+        const int ScientificModePrecision = 32;
+        const int ProgrammerModePrecision = 64;
 
         const string IsStandardPropertyName = "IsStandard";
         const string IsScientificPropertyName = "IsScientific";
@@ -134,8 +136,8 @@ namespace CalculatorApp.ViewModel
         public bool IsCurrentViewPinned { get => m_IsCurrentViewPinned; set { m_IsCurrentViewPinned = value; RaisePropertyChanged("IsCurrentViewPinned"); } }
 
 
-        private MemoryItemViewModel[] m_MemorizedNumbers;
-        public MemoryItemViewModel[] MemorizedNumbers { get => m_MemorizedNumbers; set { m_MemorizedNumbers = value; RaisePropertyChanged("MemorizedNumbers"); } }
+        private List<MemoryItemViewModel> m_MemorizedNumbers;
+        public List<MemoryItemViewModel> MemorizedNumbers { get => m_MemorizedNumbers; set { m_MemorizedNumbers = value; RaisePropertyChanged("MemorizedNumbers"); } }
 
 
         private const string IsMemoryEmptyName = "IsMemoryEmpty";
@@ -187,8 +189,8 @@ namespace CalculatorApp.ViewModel
         public bool IsByteEnabled { get => m_IsByteEnabled; set { m_IsByteEnabled = value; RaisePropertyChanged("IsByteEnabled"); } }
 
 
-        private int m_CurrentRadixType;
-        public int CurrentRadixType { get => m_CurrentRadixType; set { m_CurrentRadixType = value; RaisePropertyChanged("CurrentRadixType"); } }
+        private RADIX_TYPE m_CurrentRadixType;
+        public RADIX_TYPE CurrentRadixType { get => m_CurrentRadixType; set { m_CurrentRadixType = value; RaisePropertyChanged("CurrentRadixType"); } }
 
 
         private bool m_AreTokensUpdated;
@@ -210,8 +212,6 @@ namespace CalculatorApp.ViewModel
         private uint m_OpenParenthesisCount;
         public uint OpenParenthesisCount { get => m_OpenParenthesisCount; private set { m_OpenParenthesisCount = value; RaisePropertyChanged("OpenParenthesisCount"); } }
 
-
-
         public ICommand CopyCommand { get; } = new DelegateCommand(OnCopyCommand);
 
 
@@ -231,6 +231,228 @@ namespace CalculatorApp.ViewModel
 
 
         public ICommand MemorySubtract { get; } = new DelegateCommand(OnMemorySubtract);
+
+        bool IsShiftChecked
+        {
+            get
+            {
+                return m_isShiftChecked;
+            }
+            set
+            {
+                if (m_isShiftChecked != value)
+                {
+                    m_isShiftChecked = value;
+                    RaisePropertyChanged("IsShiftChecked");
+                }
+            }
+        }
+
+        bool IsBitFlipChecked
+        {
+            get
+            {
+                return m_isBitFlipChecked;
+            }
+            set
+            {
+                if (m_isBitFlipChecked != value)
+                {
+                    m_isBitFlipChecked = value;
+                    IsBinaryBitFlippingEnabled = IsProgrammer && m_isBitFlipChecked;
+                    AreProgrammerRadixOperatorsEnabled = IsProgrammer && !m_isBitFlipChecked;
+                    RaisePropertyChanged("IsBitFlipChecked");
+                }
+            }
+        }
+
+        bool IsBinaryBitFlippingEnabled
+        {
+            get
+            {
+                return m_isBinaryBitFlippingEnabled;
+            }
+            set
+            {
+                if (m_isBinaryBitFlippingEnabled != value)
+                {
+                    m_isBinaryBitFlippingEnabled = value;
+                    RaisePropertyChanged("IsBinaryBitFlippingEnabled");
+                }
+            }
+        }
+
+        bool IsStandard
+        {
+            get
+            {
+                return m_isStandard;
+            }
+            set
+            {
+                if (m_isStandard != value)
+                {
+                    m_isStandard = value;
+                    if (value)
+                    {
+                        IsScientific = false;
+                        IsProgrammer = false;
+                    }
+                    RaisePropertyChanged("IsStandard");
+                }
+            }
+        }
+        bool IsScientific
+        {
+            get
+            {
+                return m_isScientific;
+            }
+            set
+            {
+                if (m_isScientific != value)
+                {
+                    m_isScientific = value;
+                    if (value)
+                    {
+                        IsStandard = false;
+                        IsProgrammer = false;
+                    }
+                    RaisePropertyChanged("IsScientific");
+                }
+            }
+        }
+
+        bool IsProgrammer
+        {
+            get
+            {
+                return m_isProgrammer;
+            }
+            set
+            {
+                if (m_isProgrammer != value)
+                {
+                    m_isProgrammer = value;
+                    if (!m_isProgrammer)
+                    {
+                        IsBitFlipChecked = false;
+                    }
+                    IsBinaryBitFlippingEnabled = m_isProgrammer && IsBitFlipChecked;
+                    AreProgrammerRadixOperatorsEnabled = m_isProgrammer && !IsBitFlipChecked;
+                    if (value)
+                    {
+                        IsStandard = false;
+                        IsScientific = false;
+                    }
+                    RaisePropertyChanged("IsProgrammer");
+                }
+            }
+        }
+
+        bool IsEditingEnabled
+        {
+            get
+            {
+                return m_isEditingEnabled;
+            }
+            set
+            {
+                if (m_isEditingEnabled != value)
+                {
+                    //                        Numbers.Common.KeyboardShortcutManager.IsCalculatorInEditingMode = value;
+                    m_isEditingEnabled = value;
+                    bool currentEditToggleValue = !m_isEditingEnabled;
+                    IsBinaryOperatorEnabled = currentEditToggleValue;
+                    IsUnaryOperatorEnabled = currentEditToggleValue;
+                    IsOperandEnabled = currentEditToggleValue;
+                    IsNegateEnabled = currentEditToggleValue;
+                    IsDecimalEnabled = currentEditToggleValue;
+                    RaisePropertyChanged("IsEditingEnabled");
+                }
+            }
+        }
+
+        bool IsEngineRecording
+        {
+            get
+            {
+                return m_standardCalculatorManager.IsEngineRecording();
+            }
+        }
+
+        bool IsOperandEnabled
+        {
+            get
+            {
+                return m_isOperandEnabled;
+            }
+            set
+            {
+                if (m_isOperandEnabled != value)
+                {
+                    m_isOperandEnabled = value;
+                    IsDecimalEnabled = value;
+                    AreHEXButtonsEnabled = IsProgrammer;
+                    IsFToEEnabled = value;
+                    RaisePropertyChanged("IsOperandEnabled");
+                }
+            }
+        }
+
+        int TokenPosition
+        {
+            get
+            {
+                return m_tokenPosition;
+            }
+            set
+            {
+                m_tokenPosition = value;
+            }
+        }
+
+        string SelectedExpressionLastData
+        {
+            get { return m_selectedExpressionLastData; }
+            set { m_selectedExpressionLastData = value; }
+        }
+
+        bool KeyPressed
+        {
+            get
+            {
+                return m_keyPressed;
+            }
+            set
+            {
+                m_keyPressed = value;
+            }
+        }
+
+        bool IsOperandUpdatedUsingViewModel
+        {
+            get
+            {
+                return m_operandUpdated;
+            }
+            set
+            {
+                m_operandUpdated = value;
+            }
+        }
+
+        bool IsOperandTextCompletelySelected
+        {
+            get
+            {
+                return m_completeTextSelection;
+            }
+            set
+            {
+                m_completeTextSelection = value;
+            }
+        }
 
         //
         //
@@ -274,7 +496,10 @@ namespace CalculatorApp.ViewModel
         private bool m_isLastOperationHistoryLoad;
         private string m_selectedExpressionLastData;
         private DisplayExpressionToken m_selectedExpressionToken;
+        string m_feedbackForButtonPress;
 
+        CalculatorVector<(string, int)> m_tokens;
+        CalculatorVector<IExpressionCommand> m_commands;
 
         public StandardCalculatorViewModel()
         {
@@ -314,14 +539,14 @@ namespace CalculatorApp.ViewModel
 
             WeakReference calculatorViewModel(this);
             m_calculatorDisplay.SetCallback(calculatorViewModel);
-            m_expressionAutomationNameFormat = AppResourceProvider.GetInstance().GetResourceString(CalculatorResourceKeys.CalculatorExpression);
-            m_localizedCalculationResultAutomationFormat = AppResourceProvider.GetInstance().GetResourceString(CalculatorResourceKeys.CalculatorResults);
+            m_expressionAutomationNameFormat = AppResourceProvider.GetInstance().GetResourceString(CalculatorExpression);
+            m_localizedCalculationResultAutomationFormat = AppResourceProvider.GetInstance().GetResourceString(CalculatorResults);
             m_localizedCalculationResultDecimalAutomationFormat =
-                AppResourceProvider.GetInstance().GetResourceString(CalculatorResourceKeys.CalculatorResults_DecimalSeparator_Announced);
-            m_localizedHexaDecimalAutomationFormat = AppResourceProvider.GetInstance().GetResourceString(CalculatorResourceKeys.HexButton);
-            m_localizedDecimalAutomationFormat = AppResourceProvider.GetInstance().GetResourceString(CalculatorResourceKeys.DecButton);
-            m_localizedOctalAutomationFormat = AppResourceProvider.GetInstance().GetResourceString(CalculatorResourceKeys.OctButton);
-            m_localizedBinaryAutomationFormat = AppResourceProvider.GetInstance().GetResourceString(CalculatorResourceKeys.BinButton);
+                AppResourceProvider.GetInstance().GetResourceString(CalculatorResults_DecimalSeparator_Announced);
+            m_localizedHexaDecimalAutomationFormat = AppResourceProvider.GetInstance().GetResourceString(HexButton);
+            m_localizedDecimalAutomationFormat = AppResourceProvider.GetInstance().GetResourceString(DecButton);
+            m_localizedOctalAutomationFormat = AppResourceProvider.GetInstance().GetResourceString(OctButton);
+            m_localizedBinaryAutomationFormat = AppResourceProvider.GetInstance().GetResourceString(BinButton);
 
             // Initialize the Automation Name
             CalculationResultAutomationName = GetLocalizedStringFormat(m_localizedCalculationResultAutomationFormat, m_DisplayValue);
@@ -365,7 +590,7 @@ namespace CalculatorApp.ViewModel
                 result.push_back(Utils.PDF);
             }
 
-            return new Platform.String(result);
+            return result;
         }
 
         String CalculateNarratorDisplayValue(string displayValue, String localizedDisplayValue, bool isError)
@@ -455,7 +680,7 @@ namespace CalculatorApp.ViewModel
             LocalizationSettings.GetInstance().LocalizeDisplayValue(&localizedParenthesisCount);
 
             String announcement = LocalizationStringUtil.GetLocalizedNarratorAnnouncement(
-                CalculatorResourceKeys.OpenParenthesisCountAutomationFormat,
+                OpenParenthesisCountAutomationFormat,
                 m_localizedOpenParenthesisCountChangedAutomationFormat,
                 localizedParenthesisCount);
 
@@ -470,7 +695,7 @@ namespace CalculatorApp.ViewModel
         void SetNoParenAddedNarratorAnnouncement()
         {
             String announcement =
-                LocalizationStringUtil.GetLocalizedNarratorAnnouncement(CalculatorResourceKeys.NoParenthesisAdded, m_localizedNoRightParenthesisAddedFormat);
+                LocalizationStringUtil.GetLocalizedNarratorAnnouncement(NoParenthesisAdded, m_localizedNoRightParenthesisAddedFormat);
 
             Announcement = CalculatorAnnouncement.GetNoRightParenthesisAddedAnnouncement(announcement);
         }
@@ -503,7 +728,9 @@ namespace CalculatorApp.ViewModel
             }
         }
 
-        void SetExpressionDisplay(CalculatorList<Pair<string, int>> tokens, CalculatorList<IExpressionCommand> commands)
+        void SetExpressionDisplay(
+            CalculatorList<Pair<string, int>> tokens,
+            CalculatorList<IExpressionCommand> commands)
         {
             m_tokens = tokens;
             m_commands = commands;
@@ -549,7 +776,7 @@ namespace CalculatorApp.ViewModel
             var localizer = LocalizationSettings.GetInstance();
 
             const string separator = " ";
-            for (uint i = 0; i < nTokens; ++i)
+            for (int i = 0; i < nTokens; ++i)
             {
                 if (SUCCEEDED(tokens.GetAt(i, &currentToken)))
                 {
@@ -601,7 +828,7 @@ namespace CalculatorApp.ViewModel
         String GetCalculatorExpressionAutomationName()
         {
             String expression = "";
-            for (var && token : m_ExpressionTokens)
+            foreach (var token in m_ExpressionTokens)
             {
                 expression += LocalizationService.GetNarratorReadableToken(token.Token);
             }
@@ -609,48 +836,48 @@ namespace CalculatorApp.ViewModel
             return GetLocalizedStringFormat(m_expressionAutomationNameFormat, expression);
         }
 
-        void SetMemorizedNumbers(string[] newMemorizedNumbers)
+        void SetMemorizedNumbers(List<string> newMemorizedNumbers)
         {
             var localizer = LocalizationSettings.GetInstance();
-            if (newMemorizedNumbers.size() == 0) // Memory has been cleared
+            if (newMemorizedNumbers.Count == 0) // Memory has been cleared
             {
                 MemorizedNumbers.Clear();
                 IsMemoryEmpty = true;
             }
             // A new value is added to the memory
-            else if (newMemorizedNumbers.size() > MemorizedNumbers.Size)
+            else if (newMemorizedNumbers.Count > MemorizedNumbers.Count)
             {
-                while (newMemorizedNumbers.size() > MemorizedNumbers.Size)
+                while (newMemorizedNumbers.Count > MemorizedNumbers.Count)
                 {
-                    int newValuePosition = newMemorizedNumbers.size() - MemorizedNumbers.Size - 1;
-                    var stringValue = newMemorizedNumbers.at(newValuePosition);
+                    int newValuePosition = newMemorizedNumbers.Count - MemorizedNumbers.Count - 1;
+                    var stringValue = newMemorizedNumbers[newValuePosition];
 
                     MemoryItemViewModel memorySlot = new MemoryItemViewModel(this);
                     memorySlot.Position = 0;
-                    localizer.LocalizeDisplayValue(&stringValue);
+                    localizer.LocalizeDisplayValue(stringValue);
                     memorySlot.Value = Utils.LRO + new String(stringValue) + Utils.PDF;
 
-                    MemorizedNumbers.InsertAt(0, memorySlot);
+                    MemorizedNumbers.Insert(0, memorySlot);
                     IsMemoryEmpty = false;
 
                     // Update the slot position for the rest of the slots
-                    for (uint i = 1; i < MemorizedNumbers.Size; i++)
+                    for (int i = 1; i < MemorizedNumbers.Count; i++)
                     {
-                        MemorizedNumbers.GetAt(i).Position++;
+                        MemorizedNumbers[i].Position++;
                     }
                 }
             }
-            else if (newMemorizedNumbers.size() == MemorizedNumbers.Size) // Either M+ or M-
+            else if (newMemorizedNumbers.Count == MemorizedNumbers.Count) // Either M+ or M-
             {
-                for (uint i = 0; i < MemorizedNumbers.Size; i++)
+                for (int i = 0; i < MemorizedNumbers.Count; i++)
                 {
-                    var nestringValue = newMemorizedNumbers.at(i);
-                    localizer.LocalizeDisplayValue(&nestringValue);
+                    var newStringValue = newMemorizedNumbers[i];
+                    localizer.LocalizeDisplayValue(newStringValue);
 
                     // If the value is different, update the value
-                    if (MemorizedNumbers.GetAt(i).Value != string(nestringValue))
+                    if (MemorizedNumbers[i].Value != newStringValue)
                     {
-                        MemorizedNumbers.GetAt(i).Value = Utils.LRO + new String(nestringValue) + Utils.PDF;
+                        MemorizedNumbers[i].Value = Utils.LRO + newStringValue + Utils.PDF;
                     }
                 }
             }
@@ -724,8 +951,8 @@ namespace CalculatorApp.ViewModel
             }
 
             int length = 0;
-            char* temp = new char[100];
-            const char* data = m_selectedExpressionLastData.Data();
+            char[] temp = new char[100];
+            char[] data = m_selectedExpressionLastData.ToCharArray();
             int i = 0, j = 0;
             int commandIndex = displayExpressionToken.CommandIndex;
 
@@ -752,11 +979,10 @@ namespace CalculatorApp.ViewModel
                 {
                     if (commandIndex == 0)
                     {
-                        delete[] temp;
                         return;
                     }
 
-                    length = m_selectedExpressionLastData.Length();
+                    length = m_selectedExpressionLastData.Length;
                     for (; j < length; ++j)
                     {
                         if (j == commandIndex - 1)
@@ -770,10 +996,9 @@ namespace CalculatorApp.ViewModel
                 }
                 else
                 {
-                    length = m_selectedExpressionLastData.Length() + 1;
+                    length = m_selectedExpressionLastData.Length + 1;
                     if (length > 50)
                     {
-                        delete[] temp;
                         return;
                     }
                     for (; i < length; ++i)
@@ -816,7 +1041,7 @@ namespace CalculatorApp.ViewModel
             NumbersAndOperatorsEnum numOpEnum = CalculatorButtonPressedEventArgs.GetOperationFromCommandParameter(parameter);
             Command cmdenum = ConvertToOperatorsEnum(numOpEnum);
 
-            // // // // // // TraceLogger.GetInstance().UpdateFunctionUsage((int)numOpEnum);
+            //TraceLogger.GetInstance().UpdateFunctionUsage((int)numOpEnum);
 
             if (IsInError)
             {
@@ -894,39 +1119,39 @@ namespace CalculatorApp.ViewModel
         {
             if (IsQwordEnabled)
             {
-                return QwordType;
+                return CopyPasteManager.QwordType;
             }
             else if (IsDwordEnabled)
             {
-                return DwordType;
+                return CopyPasteManager.DwordType;
             }
             else if (IsWordEnabled)
             {
-                return WordType;
+                return CopyPasteManager.WordType;
             }
             else
             {
-                return ByteType;
+                returnCopyPasteManager.ByteType;
             }
         }
 
         int GetNumberBase()
         {
-            if (CurrentRadixType == HEX_RADIX)
+            if (CurrentRadixType == RADIX_TYPE.HEX_RADIX)
             {
-                return HexBase;
+                return CopyPasteManager.HexBase;
             }
-            else if (CurrentRadixType == DEC_RADIX)
+            else if (CurrentRadixType == RADIX_TYPE.DEC_RADIX)
             {
-                return DecBase;
+                return CopyPasteManager.DecBase;
             }
-            else if (CurrentRadixType == OCT_RADIX)
+            else if (CurrentRadixType == RADIX_TYPE.OCT_RADIX)
             {
-                return OctBase;
+                return CopyPasteManager.OctBase;
             }
             else
             {
-                return BinBase;
+                return CopyPasteManager.BinBase;
             }
         }
 
@@ -934,7 +1159,7 @@ namespace CalculatorApp.ViewModel
         {
             CopyPasteManager.CopyToClipboard(GetRawDisplayValue());
 
-            String announcement = AppResourceProvider.GetInstance().GetResourceString(CalculatorResourceKeys.DisplayCopied);
+            String announcement = AppResourceProvider.GetInstance().GetResourceString(DisplayCopied);
             Announcement = CalculatorAnnouncement.GetDisplayCopiedAnnouncement(announcement);
         }
 
@@ -982,7 +1207,7 @@ namespace CalculatorApp.ViewModel
                 return;
             }
 
-            // // // // // // TraceLogger.GetInstance().LogValidInputPasted(mode);
+            //TraceLogger.GetInstance().LogValidInputPasted(mode);
             bool isFirstLegalChar = true;
             m_standardCalculatorManager.SendCommand(Command.CommandCENTR);
             bool sendNegate = false;
@@ -1118,9 +1343,9 @@ namespace CalculatorApp.ViewModel
             m_standardCalculatorManager.MemorizedNumberClearAll();
 
             int windowId = Utils.GetWindowId();
-            // // // // // // TraceLogger.GetInstance().LogMemoryClearAll(windowId);
+            //TraceLogger.GetInstance().LogMemoryClearAll(windowId);
 
-            String announcement = LocalizationStringUtil.GetLocalizedNarratorAnnouncement(CalculatorResourceKeys.MemoryCleared, m_localizedMemoryCleared);
+            String announcement = LocalizationStringUtil.GetLocalizedNarratorAnnouncement(MemoryCleared, m_localizedMemoryCleared);
             Announcement = CalculatorAnnouncement.GetMemoryClearedAnnouncement(announcement);
         }
 
@@ -1139,7 +1364,7 @@ namespace CalculatorApp.ViewModel
             IsCurrentViewPinned = pinned;
         }
 
-        NumbersAndOperatorsEnum MapCharacterToButtonId(char ch,  bool canSendNegate)
+        NumbersAndOperatorsEnum MapCharacterToButtonId(char ch, bool canSendNegate)
         {
             NumbersAndOperatorsEnum mappedValue = NumbersAndOperatorsEnum.None;
             canSendNegate = false;
@@ -1156,7 +1381,7 @@ namespace CalculatorApp.ViewModel
                 case '7':
                 case '8':
                 case '9':
-                    mappedValue = NumbersAndOperatorsEnum.Zero + (NumbersAndOperatorsEnum)(ch - '0');
+                    mappedValue = (int)NumbersAndOperatorsEnum.Zero + (NumbersAndOperatorsEnum)(ch - '0');
                     canSendNegate = true;
                     break;
 
@@ -1253,17 +1478,17 @@ namespace CalculatorApp.ViewModel
             m_standardCalculatorManager.MemorizeNumber();
 
             int windowId = Utils.GetWindowId();
-            // // // // // // TraceLogger.GetInstance().InsertIntoMemoryMap(windowId, IsStandard, IsScientific, IsProgrammer);
+            //TraceLogger.GetInstance().InsertIntoMemoryMap(windowId, IsStandard, IsScientific, IsProgrammer);
 
             String announcement = LocalizationStringUtil.GetLocalizedNarratorAnnouncement(
-                CalculatorResourceKeys.MemorySave, m_localizedMemorySavedAutomationFormat, m_DisplayValue.Data());
+                MemorySave, m_localizedMemorySavedAutomationFormat, m_DisplayValue);
 
             Announcement = CalculatorAnnouncement.GetMemoryItemAddedAnnouncement(announcement);
         }
 
         void OnMemoryItemChanged(uint indexOfMemory)
         {
-            if (indexOfMemory < MemorizedNumbers.Size)
+            if (indexOfMemory < MemorizedNumbers.Count)
             {
                 MemoryItemViewModel memSlot = MemorizedNumbers.GetAt(indexOfMemory);
                 String localizedValue = memSlot.Value;
@@ -1272,7 +1497,7 @@ namespace CalculatorApp.ViewModel
                 LocalizationSettings.GetInstance().LocalizeDisplayValue(&localizedIndex);
 
                 String announcement = LocalizationStringUtil.GetLocalizedNarratorAnnouncement(
-                    CalculatorResourceKeys.MemoryItemChanged, m_localizedMemoryItemChangedAutomationFormat, localizedIndex, localizedValue.Data());
+                    MemoryItemChanged, m_localizedMemoryItemChangedAutomationFormat, localizedIndex, localizedValue.Data());
 
                 Announcement = CalculatorAnnouncement.GetMemoryItemChangedAnnouncement(announcement);
             }
@@ -1280,13 +1505,15 @@ namespace CalculatorApp.ViewModel
 
         void OnMemoryItemPressed(object memoryItemPosition)
         {
-            if (MemorizedNumbers && MemorizedNumbers.Size > 0)
+            if (MemorizedNumbers != null && MemorizedNumbers.Count > 0)
             {
-                var boxedPosition = safe_cast < Box<int>(memoryItemPosition);
-                m_standardCalculatorManager.MemorizedNumberLoad(boxedPosition.Value);
-                HideMemoryClicked();
-                int windowId = Utils.GetWindowId();
-                // // // // // // TraceLogger.GetInstance().LogMemoryUsed(windowId, boxedPosition.Value, IsStandard, IsScientific, IsProgrammer, MemorizedNumbers.Size);
+                if (memoryItemPosition is int boxedPosition)
+                {
+                    m_standardCalculatorManager.MemorizedNumberLoad(memoryItemPosition);
+                    HideMemoryClicked();
+                    int windowId = Utils.GetWindowId();
+                    //TraceLogger.GetInstance().LogMemoryUsed(windowId, boxedPosition.Value, IsStandard, IsScientific, IsProgrammer, MemorizedNumbers.Size);
+                }
             }
         }
 
@@ -1295,17 +1522,17 @@ namespace CalculatorApp.ViewModel
             // M+ will add display to memorylist if memory list is empty.
             int windowId = Utils.GetWindowId();
 
-            if (MemorizedNumbers)
+            if (MemorizedNumbers != null)
             {
                 var boxedPosition = safe_cast < Box<int>(memoryItemPosition);
                 if (MemorizedNumbers.Size > 0)
                 {
-                    // // // // // // TraceLogger.GetInstance().LogMemoryUsed(windowId, boxedPosition.Value, IsStandard, IsScientific, IsProgrammer, MemorizedNumbers.Size);
-                    // // // // // // TraceLogger.GetInstance().UpdateMemoryMap(windowId, boxedPosition.Value, IsStandard, IsScientific, IsProgrammer);
+                    //TraceLogger.GetInstance().LogMemoryUsed(windowId, boxedPosition.Value, IsStandard, IsScientific, IsProgrammer, MemorizedNumbers.Size);
+                    //TraceLogger.GetInstance().UpdateMemoryMap(windowId, boxedPosition.Value, IsStandard, IsScientific, IsProgrammer);
                 }
                 else
                 {
-                    // // // // // // TraceLogger.GetInstance().InsertIntoMemoryMap(windowId, IsStandard, IsScientific, IsProgrammer);
+                    //TraceLogger.GetInstance().InsertIntoMemoryMap(windowId, IsStandard, IsScientific, IsProgrammer);
                 }
                 m_standardCalculatorManager.MemorizedNumberAdd(boxedPosition.Value);
             }
@@ -1316,17 +1543,17 @@ namespace CalculatorApp.ViewModel
             int windowId = Utils.GetWindowId();
 
             // M- will add negative of displayed number to memorylist if memory list is empty.
-            if (MemorizedNumbers)
+            if (MemorizedNumbers != null)
             {
                 var boxedPosition = safe_cast < Box<int>(memoryItemPosition);
                 if (MemorizedNumbers.Size > 0)
                 {
-                    // // // // // // TraceLogger.GetInstance().LogMemoryUsed(windowId, boxedPosition.Value, IsStandard, IsScientific, IsProgrammer, MemorizedNumbers.Size);
-                    // // // // // // TraceLogger.GetInstance().UpdateMemoryMap(windowId, boxedPosition.Value, IsStandard, IsScientific, IsProgrammer);
+                    //TraceLogger.GetInstance().LogMemoryUsed(windowId, boxedPosition.Value, IsStandard, IsScientific, IsProgrammer, MemorizedNumbers.Size);
+                    //TraceLogger.GetInstance().UpdateMemoryMap(windowId, boxedPosition.Value, IsStandard, IsScientific, IsProgrammer);
                 }
                 else
                 {
-                    // // // // // // TraceLogger.GetInstance().InsertIntoMemoryMap(windowId, IsStandard, IsScientific, IsProgrammer);
+                    //TraceLogger.GetInstance().InsertIntoMemoryMap(windowId, IsStandard, IsScientific, IsProgrammer);
                 }
                 m_standardCalculatorManager.MemorizedNumberSubtract(boxedPosition.Value);
             }
@@ -1355,14 +1582,14 @@ namespace CalculatorApp.ViewModel
                         IsMemoryEmpty = true;
                     }
 
-                    // // // // // // TraceLogger.GetInstance().LogMemoryUsed(windowId, boxedPosition.Value, IsStandard, IsScientific, IsProgrammer, MemorizedNumbers.Size);
-                    // // // // // // TraceLogger.GetInstance().DeleteFromMemoryMap(windowId, boxedPosition.Value);
+                    //TraceLogger.GetInstance().LogMemoryUsed(windowId, boxedPosition.Value, IsStandard, IsScientific, IsProgrammer, MemorizedNumbers.Size);
+                    //TraceLogger.GetInstance().DeleteFromMemoryMap(windowId, boxedPosition.Value);
 
                     string localizedIndex = to_string(boxedPosition.Value + 1);
                     LocalizationSettings.GetInstance().LocalizeDisplayValue(&localizedIndex);
 
                     String announcement = LocalizationStringUtil.GetLocalizedNarratorAnnouncement(
-                        CalculatorResourceKeys.MemoryItemCleared, m_localizedMemoryItemClearedAutomationFormat, localizedIndex);
+                        MemoryItemCleared, m_localizedMemoryItemClearedAutomationFormat, localizedIndex);
 
                     Announcement = CalculatorAnnouncement.GetMemoryClearedAnnouncement(announcement);
                 }
@@ -1371,106 +1598,108 @@ namespace CalculatorApp.ViewModel
 
         Array<unsigned char> Serialize()
         {
-            DataWriter writer = new DataWriter();
-            writer.Writeuint((uint)(m_CurrentAngleType));
-            writer.WriteBoolean(IsFToEChecked);
-            writer.WriteBoolean(IsCurrentViewPinned);
-            writer.Writeuint((uint)(m_standardCalculatorManager.SerializeSavedDegreeMode()));
+            //DataWriter writer = new DataWriter();
+            //writer.Writeuint((uint)(m_CurrentAngleType));
+            //writer.WriteBoolean(IsFToEChecked);
+            //writer.WriteBoolean(IsCurrentViewPinned);
+            //writer.Writeuint((uint)(m_standardCalculatorManager.SerializeSavedDegreeMode()));
 
-            // Serialize Memory
-            List<long> serializedMemory;
-            serializedMemory = m_standardCalculatorManager.GetSerializedMemory();
-            int lengthOfSerializedMemory = serializedMemory.size();
-            writer.Writeuint((uint)(lengthOfSerializedMemory));
-            for (var data : serializedMemory)
-            {
-                writer.WriteInt32(data);
-            }
+            //// Serialize Memory
+            //List<long> serializedMemory;
+            //serializedMemory = m_standardCalculatorManager.GetSerializedMemory();
+            //int lengthOfSerializedMemory = serializedMemory.size();
+            //writer.Writeuint((uint)(lengthOfSerializedMemory));
+            //for (var data : serializedMemory)
+            //{
+            //    writer.WriteInt32(data);
+            //}
 
-            // Serialize Primary Display
-            List<long> serializedPrimaryDisplay = m_standardCalculatorManager.GetSerializedPrimaryDisplay();
-            writer.Writeuint((uint)(serializedPrimaryDisplay.size()));
-            for (var data : serializedPrimaryDisplay)
-            {
-                writer.WriteInt32(data);
-            }
+            //// Serialize Primary Display
+            //List<long> serializedPrimaryDisplay = m_standardCalculatorManager.GetSerializedPrimaryDisplay();
+            //writer.Writeuint((uint)(serializedPrimaryDisplay.size()));
+            //for (var data : serializedPrimaryDisplay)
+            //{
+            //    writer.WriteInt32(data);
+            //}
 
-            // For ProgrammerMode
-            writer.Writeuint((uint)(CurrentRadixType));
+            //// For ProgrammerMode
+            //writer.Writeuint((uint)(CurrentRadixType));
 
-            // Serialize commands of calculator manager
-            vector < unsigned char> serializedCommand = m_standardCalculatorManager.SerializeCommands();
-            writer.Writeuint((uint)(serializedCommand.size()));
-            writer.WriteBytes(new Array<unsigned char>(serializedCommand.data(), (uint)(serializedCommand.size())));
+            //// Serialize commands of calculator manager
+            //vector < unsigned char> serializedCommand = m_standardCalculatorManager.SerializeCommands();
+            //writer.Writeuint((uint)(serializedCommand.size()));
+            //writer.WriteBytes(new Array<unsigned char>(serializedCommand.data(), (uint)(serializedCommand.size())));
 
-            if (IsInError)
-            {
-                Utils.SerializeCommandsAndTokens(m_tokens, m_commands, writer);
-            }
+            //if (IsInError)
+            //{
+            //    Utils.SerializeCommandsAndTokens(m_tokens, m_commands, writer);
+            //}
 
-            // Convert viewmodel data in writer to bytes
-            IBuffer buffer = writer.DetachBuffer();
-            DataReader reader = DataReader.FromBuffer(buffer);
-            Platform.Array < unsigned char> viewModelDataAsBytes = new Array<unsigned char>(buffer.Length);
-            reader.ReadBytes(viewModelDataAsBytes);
+            //// Convert viewmodel data in writer to bytes
+            //IBuffer buffer = writer.DetachBuffer();
+            //DataReader reader = DataReader.FromBuffer(buffer);
+            //Platform.Array < unsigned char> viewModelDataAsBytes = new Array<unsigned char>(buffer.Length);
+            //reader.ReadBytes(viewModelDataAsBytes);
 
-            // Return byte array
-            return viewModelDataAsBytes;
+            //// Return byte array
+            //return viewModelDataAsBytes;
+
+            return null;
         }
 
         void Deserialize(char[] state)
         {
-            // Read byte array into a buffer
-            DataWriter writer = new DataWriter();
-            writer.WriteBytes(state);
-            IBuffer buffer = writer.DetachBuffer();
+            //// Read byte array into a buffer
+            //DataWriter writer = new DataWriter();
+            //writer.WriteBytes(state);
+            //IBuffer buffer = writer.DetachBuffer();
 
-            // Read view model data
-            if (buffer.Length != 0)
-            {
-                DataReader reader = DataReader.FromBuffer(buffer);
-                m_CurrentAngleType = ConvertIntegerToNumbersAndOperatorsEnum(reader.Readuint());
+            //// Read view model data
+            //if (buffer.Length != 0)
+            //{
+            //    DataReader reader = DataReader.FromBuffer(buffer);
+            //    m_CurrentAngleType = ConvertIntegerToNumbersAndOperatorsEnum(reader.Readuint());
 
-                IsFToEChecked = reader.ReadBoolean();
-                IsCurrentViewPinned = reader.ReadBoolean();
-                Command serializedDegreeMode = (Command)(reader.Readuint());
+            //    IsFToEChecked = reader.ReadBoolean();
+            //    IsCurrentViewPinned = reader.ReadBoolean();
+            //    Command serializedDegreeMode = (Command)(reader.Readuint());
 
-                m_standardCalculatorManager.SendCommand(serializedDegreeMode);
+            //    m_standardCalculatorManager.SendCommand(serializedDegreeMode);
 
-                // Deserialize Memory
-                uint memoryDataLength = reader.Readuint();
-                List<long> serializedMemory;
-                for (uint i = 0; i < memoryDataLength; i++)
-                {
-                    serializedMemory.push_back(reader.ReadInt32());
-                }
-                m_standardCalculatorManager.DeSerializeMemory(serializedMemory);
+            //    // Deserialize Memory
+            //    uint memoryDataLength = reader.Readuint();
+            //    List<long> serializedMemory;
+            //    for (uint i = 0; i < memoryDataLength; i++)
+            //    {
+            //        serializedMemory.push_back(reader.ReadInt32());
+            //    }
+            //    m_standardCalculatorManager.DeSerializeMemory(serializedMemory);
 
-                // Serialize Primary Display
-                uint serializedPrimaryDisplayLength = reader.Readuint();
-                List<long> serializedPrimaryDisplay;
-                for (uint i = 0; i < serializedPrimaryDisplayLength; i++)
-                {
-                    serializedPrimaryDisplay.push_back(reader.ReadInt32());
-                }
-                m_standardCalculatorManager.DeSerializePrimaryDisplay(serializedPrimaryDisplay);
+            //    // Serialize Primary Display
+            //    uint serializedPrimaryDisplayLength = reader.Readuint();
+            //    List<long> serializedPrimaryDisplay;
+            //    for (uint i = 0; i < serializedPrimaryDisplayLength; i++)
+            //    {
+            //        serializedPrimaryDisplay.push_back(reader.ReadInt32());
+            //    }
+            //    m_standardCalculatorManager.DeSerializePrimaryDisplay(serializedPrimaryDisplay);
 
-                CurrentRadixType = reader.Readuint();
-                // Read command data and Deserialize
-                uint modeldatalength = reader.Readuint();
-                Array < unsigned char> modelDataAsBytes = new Array<unsigned char>(modeldatalength);
-                reader.ReadBytes(modelDataAsBytes);
-                m_standardCalculatorManager.DeSerializeCommands(vector < unsigned char > (modelDataAsBytes.begin(), modelDataAsBytes.end()));
+            //    CurrentRadixType = reader.Readuint();
+            //    // Read command data and Deserialize
+            //    uint modeldatalength = reader.Readuint();
+            //    Array < unsigned char> modelDataAsBytes = new Array<unsigned char>(modeldatalength);
+            //    reader.ReadBytes(modelDataAsBytes);
+            //    m_standardCalculatorManager.DeSerializeCommands(vector < unsigned char > (modelDataAsBytes.begin(), modelDataAsBytes.end()));
 
-                // After recalculation. If there is an error then
-                // IsInError should be set synchronously.
-                if (IsInError)
-                {
-                    CalculatorList<IExpressionCommand> commandVector = Utils.DeserializeCommands(reader);
-                    CalculatorList<pair<string, int>> tokenVector = Utils.DeserializeTokens(reader);
-                    SetExpressionDisplay(tokenVector, commandVector);
-                }
-            }
+            //    // After recalculation. If there is an error then
+            //    // IsInError should be set synchronously.
+            //    if (IsInError)
+            //    {
+            //        CalculatorList<IExpressionCommand> commandVector = Utils.DeserializeCommands(reader);
+            //        CalculatorList<pair<string, int>> tokenVector = Utils.DeserializeTokens(reader);
+            //        SetExpressionDisplay(tokenVector, commandVector);
+            //    }
+            //}
         }
 
         void OnPropertyChanged(String propertyname)
@@ -1539,7 +1768,7 @@ namespace CalculatorApp.ViewModel
 
             LocalizationSettings.GetInstance().RemoveGroupSeparators(DisplayValue.Data(), DisplayValue.Length(), &rawValue);
 
-            return new Platform.String(rawValue);
+            return rawValue;
         }
 
         // Given a format string, returns a string with the input display value inserted.
@@ -1554,8 +1783,8 @@ namespace CalculatorApp.ViewModel
         void ResetDisplay()
         {
             AreHEXButtonsEnabled = false;
-            CurrentRadixType = (int)RADIX_TYPE.DEC_RADIX;
-            m_standardCalculatorManager.SetRadix(DEC_RADIX);
+            CurrentRadixType = RADIX_TYPE.DEC_RADIX;
+            m_standardCalculatorManager.SetRadix(RADIX_TYPE.DEC_RADIX);
             ProgModeRadixChange();
         }
 
@@ -1572,7 +1801,7 @@ namespace CalculatorApp.ViewModel
             }
 
             AreHEXButtonsEnabled = (radixType == RADIX_TYPE.HEX_RADIX);
-            CurrentRadixType = (int)radixType;
+            CurrentRadixType = radixType;
             m_standardCalculatorManager.SetRadix(radixType);
             ProgModeRadixChange();
         }
@@ -1587,13 +1816,13 @@ namespace CalculatorApp.ViewModel
             switch (command)
             {
                 case Command.CommandDEG:
-                    return ANGLE_DEG;
+                    return ANGLE_TYPE.ANGLE_DEG;
                 case Command.CommandRAD:
-                    return ANGLE_RAD;
+                    return ANGLE_TYPE.ANGLE_RAD;
                 case Command.CommandGRAD:
-                    return ANGLE_GRAD;
+                    return ANGLE_TYPE.ANGLE_GRAD;
                 default:
-                    throw new Exception(E_FAIL, "Invalid command type");
+                    throw new Exception("Invalid command type");
             }
         }
 
@@ -1695,7 +1924,7 @@ namespace CalculatorApp.ViewModel
                 IFTPlatformException(m_tokens.SetAt(tokenPosition, selectedToken));
 
                 DisplayExpressionToken displayExpressionToken = ExpressionTokens.GetAt(tokenPosition);
-                displayExpressionToken.Token = new Platform.String(updatedToken);
+                displayExpressionToken.Token = updatedToken;
 
                 // Special casing
                 if (command == Command.CommandSIGN && tokenCommand.GetCommandType() == CommandType.UnaryCommand)
@@ -1734,20 +1963,20 @@ namespace CalculatorApp.ViewModel
                     for (uint j = 0; j < unaryCommandCount; ++j)
                     {
                         IFTPlatformException(unaryCommands.GetAt(j, &nUCode));
-                        currentCommands.push_back(nUCode);
+                        currentCommands.Add(nUCode);
                     }
                 }
 
                 if (commandType == CommandType.BinaryCommand)
                 {
                     IBinaryCommand spCommand = (IBinaryCommand)(command);
-                    currentCommands.push_back(spCommand.GetCommand());
+                    currentCommands.Add(spCommand.GetCommand());
                 }
 
                 if (commandType == CommandType.Parentheses)
                 {
                     IParenthesisCommand spCommand = (IParenthesisCommand)(command);
-                    currentCommands.push_back(spCommand.GetCommand());
+                    currentCommands.Add(spCommand.GetCommand());
                 }
 
                 if (commandType == CommandType.OperandCommand)
@@ -1762,11 +1991,11 @@ namespace CalculatorApp.ViewModel
                     for (uint j = 0; j < opndCommandCount; ++j)
                     {
                         IFTPlatformException(opndCommands.GetAt(j, &nOCode));
-                        currentCommands.push_back(nOCode);
+                        currentCommands.Add(nOCode);
 
                         if (fNeedIDCSign && nOCode != IDC_0)
                         {
-                            currentCommands.push_back((int)(CalculationManager.Command.CommandSIGN));
+                            currentCommands.Add((int)(CalculationManager.Command.CommandSIGN));
                             fNeedIDCSign = false;
                         }
                     }
@@ -1829,12 +2058,12 @@ namespace CalculatorApp.ViewModel
             return tokenCommand.GetCommandType();
         }
 
+        static Command[] opnd = { Command.Command0, Command.Command1, Command.Command2, Command.Command3, Command.Command4,  Command.Command5,
+                            Command.Command6, Command.Command7, Command.Command8, Command.Command9, Command.CommandPNT };
+
         bool IsOpnd(int nOpCode)
         {
-            static Command opnd[] = { Command.Command0, Command.Command1, Command.Command2, Command.Command3, Command.Command4,  Command.Command5,
-                              Command.Command6, Command.Command7, Command.Command8, Command.Command9, Command.CommandPNT };
-
-            for (uint i = 0; i < size(opnd); i++)
+            for (uint i = 0; i < opnd.Length; i++)
             {
                 if (nOpCode == (int)(opnd[i]))
                 {
@@ -1844,14 +2073,14 @@ namespace CalculatorApp.ViewModel
             return false;
         }
 
+        static Command[] unaryOp = { Command.CommandSQRT,  Command.CommandFAC,  Command.CommandSQR,   Command.CommandLOG,
+                                Command.CommandPOW10, Command.CommandPOWE, Command.CommandLN,    Command.CommandREC,
+                                Command.CommandSIGN,  Command.CommandSINH, Command.CommandASINH, Command.CommandCOSH,
+                                Command.CommandACOSH, Command.CommandTANH, Command.CommandATANH, Command.CommandCUB };
+
         bool IsUnaryOp(int nOpCode)
         {
-            static Command unaryOp[] = { Command.CommandSQRT,  Command.CommandFAC,  Command.CommandSQR,   Command.CommandLOG,
-                                 Command.CommandPOW10, Command.CommandPOWE, Command.CommandLN,    Command.CommandREC,
-                                 Command.CommandSIGN,  Command.CommandSINH, Command.CommandASINH, Command.CommandCOSH,
-                                 Command.CommandACOSH, Command.CommandTANH, Command.CommandATANH, Command.CommandCUB };
-
-            for (uint i = 0; i < size(unaryOp); i++)
+            for (uint i = 0; i < unaryOp.Length; i++)
             {
                 if (nOpCode == (int)(unaryOp[i]))
                 {
@@ -1867,13 +2096,13 @@ namespace CalculatorApp.ViewModel
             return false;
         }
 
+        static Command[] trigOp = {
+            Command.CommandSIN, Command.CommandCOS, Command.CommandTAN, Command.CommandASIN, Command.CommandACOS, Command.CommandATAN
+        };
         bool IsTrigOp(int nOpCode)
         {
-            static Command trigOp[] = {
-        Command.CommandSIN, Command.CommandCOS, Command.CommandTAN, Command.CommandASIN, Command.CommandACOS, Command.CommandATAN
-    };
 
-            for (uint i = 0; i < size(trigOp); i++)
+            for (uint i = 0; i < trigOp.Length; i++)
             {
                 if (nOpCode == (int)(trigOp[i]))
                 {
@@ -1883,12 +2112,12 @@ namespace CalculatorApp.ViewModel
             return false;
         }
 
+        static Command[] binOp = { Command.CommandADD, Command.CommandSUB,  Command.CommandMUL, Command.CommandDIV,
+                            Command.CommandEXP, Command.CommandROOT, Command.CommandMOD, Command.CommandPWR };
+
         bool IsBinOp(int nOpCode)
         {
-            static Command binOp[] = { Command.CommandADD, Command.CommandSUB,  Command.CommandMUL, Command.CommandDIV,
-                               Command.CommandEXP, Command.CommandROOT, Command.CommandMOD, Command.CommandPWR };
-
-            for (uint i = 0; i < size(binOp); i++)
+            for (uint i = 0; i < binOp.Length; i++)
             {
                 if (nOpCode == (int)(binOp[i]))
                 {
@@ -1897,6 +2126,8 @@ namespace CalculatorApp.ViewModel
             }
             return false;
         }
+
+        static Command[] recoverableCommands = { Command.CommandA, Command.CommandB, Command.CommandC, Command.CommandD, Command.CommandE, Command.CommandF };
 
         bool IsRecoverableCommand(int nOpCode)
         {
@@ -1913,9 +2144,8 @@ namespace CalculatorApp.ViewModel
                 return true;
             }
 
-            static Command recoverableCommands[] = { Command.CommandA, Command.CommandB, Command.CommandC, Command.CommandD, Command.CommandE, Command.CommandF };
 
-            for (uint i = 0; i < size(recoverableCommands); i++)
+            for (uint i = 0; i < recoverableCommands.Length; i++)
             {
                 if (nOpCode == (int)(recoverableCommands[i]))
                 {
@@ -1928,7 +2158,7 @@ namespace CalculatorApp.ViewModel
         int LengthWithoutPadding(string str)
         {
             int count = 0;
-            for (int i = 0; i < str.length(); i++)
+            for (int i = 0; i < str.Length; i++)
             {
                 if (str[i] != ' ')
                 {
@@ -1959,10 +2189,11 @@ namespace CalculatorApp.ViewModel
 
         void UpdateProgrammerPanelDisplay()
         {
-            string hexDisplayString;
-            string decimalDisplayString;
-            string octalDisplayString;
-            string binaryDisplayString;
+            string hexDisplayString = "";
+            string decimalDisplayString = "";
+            string octalDisplayString = "";
+            string binaryDisplayString = "";
+
             if (!IsInError)
             {
                 // we want the precision to be set to maximum value so that the varconversions result as desired
@@ -1990,10 +2221,10 @@ namespace CalculatorApp.ViewModel
             localizer.LocalizeDisplayValue(octalDisplayString);
             localizer.LocalizeDisplayValue(binaryDisplayString);
 
-            HexDisplayValue = Utils.LRO + new Platform.String(hexDisplayString) + Utils.PDF;
-            DecimalDisplayValue = Utils.LRO + new Platform.String(decimalDisplayString) + Utils.PDF;
-            OctalDisplayValue = Utils.LRO + new Platform.String(octalDisplayString) + Utils.PDF;
-            BinaryDisplayValue = Utils.LRO + new Platform.String(binaryDisplayString) + Utils.PDF;
+            HexDisplayValue = Utils.LRO + hexDisplayString + Utils.PDF;
+            DecimalDisplayValue = Utils.LRO + decimalDisplayString + Utils.PDF;
+            OctalDisplayValue = Utils.LRO + octalDisplayString + Utils.PDF;
+            BinaryDisplayValue = Utils.LRO + binaryDisplayString + Utils.PDF;
             HexDisplayValue_AutomationName = GetLocalizedStringFormat(m_localizedHexaDecimalAutomationFormat, GetNarratorStringReadRawNumbers(HexDisplayValue));
             DecDisplayValue_AutomationName = GetLocalizedStringFormat(m_localizedDecimalAutomationFormat, DecimalDisplayValue);
             OctDisplayValue_AutomationName = GetLocalizedStringFormat(m_localizedOctalAutomationFormat, GetNarratorStringReadRawNumbers(OctalDisplayValue));
@@ -2021,6 +2252,7 @@ namespace CalculatorApp.ViewModel
                     break;
                 default:
                     angletype = NumbersAndOperatorsEnum.Degree;
+                    break;
             };
             return angletype;
         }
@@ -2031,12 +2263,11 @@ namespace CalculatorApp.ViewModel
             m_tokens.GetAt(pos, &p);
 
             String englishString = LocalizationSettings.GetInstance().GetEnglishValueFromLocalizedDigits(text.Data());
-            p.first = englishString.Data();
+            p.first = englishString;
 
             int commandPos = p.second;
-            IExpressionCommand exprCmd;
-            m_commands.GetAt(commandPos, &exprCmd);
-            var operandCommand = std.(IOpndCommand)(exprCmd);
+            IExpressionCommand exprCmd = m_commands[commandPos];
+            var operandCommand = (IOpndCommand)(exprCmd);
 
             if (operandCommand != null)
             {
@@ -2091,7 +2322,7 @@ namespace CalculatorApp.ViewModel
 
         void UpdatecommandsInRecordingMode()
         {
-            vector < unsigned char> savedCommands = m_standardCalculatorManager.GetSavedCommands();
+            List<char> savedCommands = m_standardCalculatorManager.GetSavedCommands();
             CalculatorList<int> commands = new CalculatorList<int>();
             bool isDecimal = false;
             bool isNegative = false;
@@ -2101,9 +2332,9 @@ namespace CalculatorApp.ViewModel
 
             int num = 0;
             Command val;
-            for (uint i = 0; i < savedCommands.size(); ++i)
+            for (int i = 0; i < savedCommands.Count; ++i)
             {
-                val = Command > (savedCommands[i]);
+                val = (Command)(savedCommands[i]);
                 num = (int)(val);
                 if (val == Command.CommandSIGN)
                 {
@@ -2158,7 +2389,7 @@ namespace CalculatorApp.ViewModel
         void OnMaxDigitsReached()
         {
             String announcement = LocalizationStringUtil.GetLocalizedNarratorAnnouncement(
-                CalculatorResourceKeys.MaxDigitsReachedFormat, m_localizedMaxDigitsReachedAutomationFormat, m_CalculationResultAutomationName.Data());
+                MaxDigitsReachedFormat, m_localizedMaxDigitsReachedAutomationFormat, m_CalculationResultAutomationName.Data());
 
             Announcement = CalculatorAnnouncement.GetMaxDigitsReachedAnnouncement(announcement);
         }
@@ -2178,7 +2409,7 @@ namespace CalculatorApp.ViewModel
             else
             {
                 announcement = LocalizationStringUtil.GetLocalizedNarratorAnnouncement(
-                    CalculatorResourceKeys.ButtonPressFeedbackFormat,
+                    ButtonPressFeedbackFormat,
                     m_localizedButtonPressFeedbackAutomationFormat,
                     m_CalculationResultAutomationName.Data(),
                     m_feedbackForButtonPress.Data());
@@ -2190,3 +2421,4 @@ namespace CalculatorApp.ViewModel
             return CalculatorAnnouncement.GetDisplayUpdatedAnnouncement(announcement);
         }
     }
+}
