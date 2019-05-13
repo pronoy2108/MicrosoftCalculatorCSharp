@@ -186,8 +186,10 @@
 	<Grid x:Name="BitFlipPanel"
 				x:Uid="BitFlipPanel"
 				Margin="0,1,0,1"
-				Background="{ThemeResource SystemControlAcrylicWindowBrush}"
 				AutomationProperties.HeadingLevel="Level1">
+    
+				<!-- UNO TODO
+        Background="{ThemeResource SystemControlAcrylicWindowBrush}"-->
 
 		<Grid.RowDefinitions>
 			<RowDefinition Height="1*" />

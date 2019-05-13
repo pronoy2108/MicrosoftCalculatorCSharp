@@ -79,9 +79,14 @@ namespace CalculatorApp.Common
 
         LocalizationService()
         {
+#if HAS_UNO
+            m_language = "en-US";
+            m_flowDirection = FlowDirection.LeftToRight;
+#else
             m_language = ApplicationLanguages.Languages[0];
             m_flowDirection =
                 ResourceContext.GetForCurrentView().QualifierValues["LayoutDirection"] != "LTR" ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+#endif
 
             var resourceLoader = AppResourceProvider.GetInstance();
             m_fontFamilyOverride = resourceLoader.GetResourceString("LocalizedFontFamilyOverride");

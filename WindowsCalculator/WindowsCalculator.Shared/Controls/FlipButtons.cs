@@ -22,7 +22,7 @@ namespace CalculatorApp
 		}
 
 		public static readonly DependencyProperty ButtonIdProperty =
-			DependencyProperty.Register("ButtonId", typeof(int), typeof(CalculatorButton), new PropertyMetadata(null));
+			DependencyProperty.Register("ButtonId", typeof(NumbersAndOperatorsEnum), typeof(FlipButtons), new PropertyMetadata(null));
 
 		// HoverBackground
 		public Brush HoverBackground
@@ -32,7 +32,7 @@ namespace CalculatorApp
 		}
 
 		public static readonly DependencyProperty HoverBackgroundProperty =
-			DependencyProperty.Register("HoverBackground", typeof(Brush), typeof(CalculatorButton), new PropertyMetadata(null));
+			DependencyProperty.Register("HoverBackground", typeof(Brush), typeof(FlipButtons), new PropertyMetadata(null));
 
 		// HoverForeground
 		public Brush HoverForeground
@@ -42,7 +42,7 @@ namespace CalculatorApp
 		}
 
 		public static readonly DependencyProperty HoverForegroundProperty =
-			DependencyProperty.Register("HoverForeground", typeof(Brush), typeof(CalculatorButton), new PropertyMetadata(null));
+			DependencyProperty.Register("HoverForeground", typeof(Brush), typeof(FlipButtons), new PropertyMetadata(null));
 
 		// PressBackground
 		public Brush PressBackground
@@ -52,7 +52,7 @@ namespace CalculatorApp
 		}
 
 		public static readonly DependencyProperty PressBackgroundProperty =
-			DependencyProperty.Register("PressBackground", typeof(Brush), typeof(CalculatorButton), new PropertyMetadata(null));
+			DependencyProperty.Register("PressBackground", typeof(Brush), typeof(FlipButtons), new PropertyMetadata(null));
 
 		// PressForeground
 		public Brush PressForeground
@@ -62,7 +62,7 @@ namespace CalculatorApp
 		}
 
 		public static readonly DependencyProperty PressForegroundProperty =
-			DependencyProperty.Register("PressForeground", typeof(Brush), typeof(CalculatorButton), new PropertyMetadata(null));
+			DependencyProperty.Register("PressForeground", typeof(Brush), typeof(FlipButtons), new PropertyMetadata(null));
 
 		// PROTECTED 
 		override protected void OnKeyDown(KeyRoutedEventArgs e)

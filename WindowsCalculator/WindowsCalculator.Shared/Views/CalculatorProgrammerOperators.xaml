@@ -48,7 +48,7 @@
 							<VisualStateManager.VisualStateGroups>
 								<VisualStateGroup x:Name="CommonStates">
 									<VisualState x:Name="Normal" />
-									<VisualState x:Name="PointerOver">
+									<!--<VisualState x:Name="PointerOver">
 										<VisualState.Setters>
 											<Setter Target="ControlRoot.(RevealBrush.State)"
 															Value="PointerOver" />
@@ -71,7 +71,7 @@
 											<Setter Target="LabelPresenter.Foreground"
 															Value="{ThemeResource SystemControlHighlightAltBaseHighBrush}" />
 										</VisualState.Setters>
-									</VisualState>
+									</VisualState>-->
 									<VisualState x:Name="Disabled">
 										<VisualState.Setters>
 											<Setter Target="RevealBackplate.Visibility"
@@ -95,9 +95,12 @@
 
 							<Border x:Name="RevealBackplate"
 											Margin="0,-1,0,0"
-											Background="{ThemeResource ListViewItemRevealBackground}"
-											BorderBrush="{ThemeResource ListViewItemRevealBorderBrush}"
 											BorderThickness="0,1,0,1" />
+              
+											<!--
+                      UNO TODO
+                      Background="{ThemeResource ListViewItemRevealBackground}"
+											BorderBrush="{ThemeResource ListViewItemRevealBorderBrush}"-->
 
 							<Grid x:Name="NormalStatesGrid">
 								<Grid.ColumnDefinitions>
@@ -244,8 +247,8 @@
 													AutomationProperties.Name="{x:Bind Model.HexDisplayValue_AutomationName, Mode=OneWay}"
 													Checked="HexButtonChecked"
 													Content="{x:Bind Model.HexDisplayValue, Mode=OneWay}"
-													ContextFlyout="{StaticResource ProgrammerOperatorsContextMenu}"
 													GroupName="BaseConversion" />
+													<!--ContextFlyout="{StaticResource ProgrammerOperatorsContextMenu}"-->
 		
 		<controls:RadixButton x:Name="decimalButton"
 													x:Uid="decimalButton"
@@ -256,9 +259,9 @@
 													AutomationProperties.Name="{x:Bind Model.DecDisplayValue_AutomationName, Mode=OneWay}"
 													Checked="DecButtonChecked"
 													Content="{x:Bind Model.DecimalDisplayValue, Mode=OneWay}"
-													ContextFlyout="{StaticResource ProgrammerOperatorsContextMenu}"
 													GroupName="BaseConversion"
 													IsChecked="true" />
+													<!--ContextFlyout="{StaticResource ProgrammerOperatorsContextMenu}"-->
 		
 		<controls:RadixButton x:Name="octButton"
 													x:Uid="octButton"
@@ -269,8 +272,8 @@
 													AutomationProperties.Name="{x:Bind Model.OctDisplayValue_AutomationName, Mode=OneWay}"
 													Checked="OctButtonChecked"
 													Content="{x:Bind Model.OctalDisplayValue, Mode=OneWay}"
-													ContextFlyout="{StaticResource ProgrammerOperatorsContextMenu}"
 													GroupName="BaseConversion" />
+													<!--ContextFlyout="{StaticResource ProgrammerOperatorsContextMenu}"-->
 		
 		<controls:RadixButton x:Name="binaryButton"
 													x:Uid="binaryButton"
@@ -281,7 +284,7 @@
 													AutomationProperties.Name="{x:Bind Model.BinDisplayValue_AutomationName, Mode=OneWay}"
 													Checked="BinButtonChecked"
 													Content="{x:Bind Model.BinaryDisplayValue, Mode=OneWay}"
-													ContextFlyout="{StaticResource ProgrammerOperatorsContextMenu}"
 													GroupName="BaseConversion" />
+													<!--ContextFlyout="{StaticResource ProgrammerOperatorsContextMenu}"-->
 	</Grid>
 </UserControl>

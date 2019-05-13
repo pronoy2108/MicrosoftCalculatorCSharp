@@ -233,9 +233,12 @@
              Color="Transparent" />
 
   <RevealBackgroundBrush x:Key="AppControlHighlightAltListAccentHighRevealBackgroundBrush"
-               FallbackColor="{ThemeResource SystemAccentColorDark3}"
                TargetTheme="Dark"
-               Color="{ThemeResource SystemAccentColorDark3}" />
+                />
+              <!--
+              UNO TODO
+              Color="{ThemeResource SystemAccentColorDark3}"
+               FallbackColor="{ThemeResource SystemAccentColorDark3}"-->
 
   <AcrylicBrush x:Key="AppChromeAcrylicHostBackdropMediumLowBrush"
           BackgroundSource="HostBackdrop"
@@ -530,10 +533,12 @@
   <Style x:Key="AccentCalcButtonStyle"
        BasedOn="{StaticResource SymbolOperatorButtonStyle}"
        TargetType="Controls:CalculatorButton">
+       <!--
+       UNO TODO
     <Setter Property="HoverBackground"
         Value="{ThemeResource SystemControlHighlightAccentRevealBackgroundBrush}" />
     <Setter Property="HoverForeground"
-        Value="{ThemeResource SystemControlHighlightAltAltHighBrush}" />
+        Value="{ThemeResource SystemControlHighlightAltAltHighBrush}" />-->
     <Setter Property="PressBackground"
         Value="{ThemeResource AppControlHighlightAltListAccentHighRevealBackgroundBrush}" />
     <Setter Property="PressForeground"

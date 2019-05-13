@@ -1277,11 +1277,12 @@
 														HorizontalScrollBarVisibility="Hidden"
 														HorizontalSnapPointsAlignment="Center"
 														HorizontalSnapPointsType="MandatorySingle"
-														Template="{StaticResource ScrollViewerScrollBarlessTemplate}"
 														VerticalScrollBarVisibility="Disabled"
 														VerticalScrollMode="Disabled"
 														VerticalSnapPointsType="None"
 														ZoomMode="Disabled">
+                
+														<!--UNO TODO Template="{StaticResource ScrollViewerScrollBarlessTemplate}"-->
 
 								<PivotPanel x:Name="Panel"
 														VerticalAlignment="Stretch"
