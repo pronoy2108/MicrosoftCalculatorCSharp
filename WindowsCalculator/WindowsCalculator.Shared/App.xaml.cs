@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CalculatorApp;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,6 +8,7 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -21,12 +23,14 @@ namespace WindowsCalculator
 	/// Provides application-specific behavior to supplement the default Application class.
 	/// </summary>
 	sealed partial class App : Application
-	{
-		/// <summary>
-		/// Initializes the singleton application object.  This is the first line of authored code
-		/// executed, and as such is the logical equivalent of main() or WinMain().
-		/// </summary>
-		public App()
+    {
+        static bool m_isAnimationEnabled = true;
+
+        /// <summary>
+        /// Initializes the singleton application object.  This is the first line of authored code
+        /// executed, and as such is the logical equivalent of main() or WinMain().
+        /// </summary>
+        public App()
 		{
 			this.InitializeComponent();
 			this.Suspending += OnSuspending;
@@ -45,7 +49,13 @@ namespace WindowsCalculator
                // this.DebugSettings.EnableFrameRateCounter = true;
             }
 #endif
-			Frame rootFrame = Windows.UI.Xaml.Window.Current.Content as Frame;
+
+#if !HAS_UNO
+            var userSettings = new Windows.UI.ViewManagement.UISettings();
+            m_isAnimationEnabled = userSettings.AnimationsEnabled;
+#endif
+
+            Frame rootFrame = Windows.UI.Xaml.Window.Current.Content as Frame;
 
 			// Do not repeat app initialization when the Window already has content,
 			// just ensure that the window is active
@@ -78,6 +88,34 @@ namespace WindowsCalculator
 				Windows.UI.Xaml.Window.Current.Activate();
 			}
 		}
+
+        /// <summary>
+        /// Return True if animation is enabled by user setting.
+        /// </summary>
+        public static bool IsAnimationEnabled()
+        {
+            return m_isAnimationEnabled;
+        }
+
+        /// <summary>
+        /// Return the current application view state. The value
+        /// will match one of the constants in the ViewState namespace.
+        /// </summary>
+        public static string GetAppViewState()
+        {
+            String newViewState;
+            CoreWindow window = CoreWindow.GetForCurrentThread();
+            if ((window.Bounds.Width >= 560) && (window.Bounds.Height >= 356))
+            {
+                newViewState = ViewState.DockedView;
+            }
+            else
+            {
+                newViewState = ViewState.Snap;
+            }
+
+            return newViewState;
+        }
 
 		/// <summary>
 		/// Invoked when Navigation to a certain page fails

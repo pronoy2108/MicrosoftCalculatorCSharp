@@ -3,18 +3,20 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:common="using:WindowsCalculator.Shared.Common"
              xmlns:controls="using:WindowsCalculator.Shared.Controls"
-             xmlns:converters="using:WindowsCalculator.Shared.Converters"
+             xmlns:converters="using:CalculatorApp.Converters"
              xmlns:local="using:WindowsCalculator.Shared.Views"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:model="using:WindowsCalculator.Shared.ViewModel"
              xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-             x:Name="MemoryListItem"
              FlowDirection="LeftToRight"
              mc:Ignorable="">
+             <!-- UNO TODO x:Name="MemoryListItem"-->
 	
 	<UserControl.Resources>
 		
-		<muxc:FontIconSource x:Key="MemClearGlyph"
+		<!--
+    UNO TODO
+    <muxc:FontIconSource x:Key="MemClearGlyph"
 												 FontFamily="{StaticResource CalculatorFontFamily}"
 												 Glyph="&#xf754;" />
 		
@@ -43,10 +45,10 @@
 											Background="{ThemeResource SystemControlBackgroundAccentBrush}"
 											IconSource="{StaticResource MemMinusGlyph}"
 											Invoked="OnMemorySubtractSwipeInvoked" />
-		</muxc:SwipeItems>
+		</muxc:SwipeItems>-->
 	</UserControl.Resources>
 
-	<muxc:SwipeControl RightItems="{StaticResource MemorySwipeItems}">
+	<!--<muxc:SwipeControl RightItems="{StaticResource MemorySwipeItems}">
 		<VisualStateManager.VisualStateGroups>
 			<VisualStateGroup x:Name="HoverStates">
 				<VisualState x:Name="MemoryButtonsVisible">
@@ -110,5 +112,5 @@
 								Content="M-" />
 			</Grid>
 		</Grid>
-	</muxc:SwipeControl>
+	</muxc:SwipeControl>-->
 </UserControl>

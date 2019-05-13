@@ -48,8 +48,8 @@ namespace CalculatorApp
             public ICommand ClearCommand { get; }
 
             // events that are created
-            event HideHistoryClickedHandler HideHistoryClicked;
-            event HistoryItemClickedHandler HistoryItemClicked;
+            public event HideHistoryClickedHandler HideHistoryClicked;
+            public event HistoryItemClickedHandler HistoryItemClicked;
 
             CalculationManager.CalculatorManager m_calculatorManager;
             CalculatorDisplay m_calculatorDisplay;
@@ -82,7 +82,7 @@ namespace CalculatorApp
             }
 
             // this will reload Items with the history list based on current mode
-            void ReloadHistory(ViewMode currentMode)
+            public void ReloadHistory(ViewMode currentMode)
             {
                 if (currentMode == ViewMode.Standard)
                 {
@@ -288,7 +288,7 @@ namespace CalculatorApp
                 historyContainer.Values.Add(HistoryVectorLengthKey, newValue);
             }
 
-            void ClearHistory()
+            public void ClearHistory()
             {
                 ClearHistoryContainer(CalculationManager.CALCULATOR_MODE.CM_STD);
                 ClearHistoryContainer(CalculationManager.CALCULATOR_MODE.CM_SCI);

@@ -1,4 +1,4 @@
-﻿<Page x:Class="WindowsCalculator.MainPage"
+﻿<Page x:Class="CalculatorApp.MainPage"
 			xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -134,11 +134,13 @@
 												 PaneOpened="OnNavPaneOpened"
 												 PaneOpening="OnNavPaneOpening"
 		-->
+												 <!--UNO TODO 
+                         CompactModeThresholdWidth="Infinity"
+												 ExpandedModeThresholdWidth="Infinity"
+                         -->
 		<NavigationView x:Name="NavView"
 												 Grid.Row="2"
-												 CompactModeThresholdWidth="Infinity"
 												 DataContext="{x:Bind Model}"
-												 ExpandedModeThresholdWidth="Infinity"
 												 IsSettingsVisible="False"
 												 Loaded="OnNavLoaded"
 												 MenuItemsSource="{x:Bind CreateUIElementsForCategories(Model.Categories), Mode=OneWay}"

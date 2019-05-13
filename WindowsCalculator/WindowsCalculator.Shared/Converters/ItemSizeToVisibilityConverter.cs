@@ -6,7 +6,7 @@ using Windows.UI.Xaml.Interop;
 using Windows.Foundation.Metadata;
 using Windows.UI.Xaml.Data;
 
-namespace WindowsCalculator.Shared.Converters
+namespace CalculatorApp.Converters
 {
 	sealed public class ItemSizeToVisibilityConverter : IValueConverter
 	{

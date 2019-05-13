@@ -30,8 +30,8 @@ namespace CalculatorApp.ViewModel
 {
     public class StandardCalculatorViewModel : INotifyPropertyChanged
     {
-        delegate void HideMemoryClickedHandler();
-        delegate void ProgModeRadixChangeHandler();
+        public delegate void HideMemoryClickedHandler();
+        public delegate void ProgModeRadixChangeHandler();
 
         const int ASCII_0 = 48;
         const int StandardModePrecision = 16;
@@ -61,8 +61,8 @@ namespace CalculatorApp.ViewModel
         const string MemoryCleared = "Memory_Cleared";
         const string DisplayCopied = "Display_Copied";
 
-        event HideMemoryClickedHandler HideMemoryClicked;
-        event ProgModeRadixChangeHandler ProgModeRadixChange;
+        public event HideMemoryClickedHandler HideMemoryClicked;
+        public event ProgModeRadixChangeHandler ProgModeRadixChange;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -233,9 +233,9 @@ namespace CalculatorApp.ViewModel
 
         public ICommand MemoryAdd { get; }
 
-        public ICommand MemorySubtract { get; } 
+        public ICommand MemorySubtract { get; }
 
-        bool IsShiftChecked
+        public bool IsShiftChecked
         {
             get
             {
@@ -251,7 +251,7 @@ namespace CalculatorApp.ViewModel
             }
         }
 
-        bool IsBitFlipChecked
+        public bool IsBitFlipChecked
         {
             get
             {
@@ -269,7 +269,7 @@ namespace CalculatorApp.ViewModel
             }
         }
 
-        bool IsBinaryBitFlippingEnabled
+        public bool IsBinaryBitFlippingEnabled
         {
             get
             {
@@ -285,7 +285,7 @@ namespace CalculatorApp.ViewModel
             }
         }
 
-        bool IsStandard
+        public bool IsStandard
         {
             get
             {
@@ -305,7 +305,7 @@ namespace CalculatorApp.ViewModel
                 }
             }
         }
-        bool IsScientific
+        public bool IsScientific
         {
             get
             {
@@ -326,7 +326,7 @@ namespace CalculatorApp.ViewModel
             }
         }
 
-        bool IsProgrammer
+        public bool IsProgrammer
         {
             get
             {
@@ -457,7 +457,7 @@ namespace CalculatorApp.ViewModel
             }
         }
 
-        RADIX_TYPE GetCurrentRadixType() => m_CurrentRadixType;
+        public RADIX_TYPE GetCurrentRadixType() => m_CurrentRadixType;
 
         void UpdateMaxIntDigits() => m_standardCalculatorManager.UpdateMaxIntDigits();
 
@@ -688,7 +688,7 @@ namespace CalculatorApp.ViewModel
             }
         }
 
-        void SetOpenParenthesisCountNarratorAnnouncement()
+        public void SetOpenParenthesisCountNarratorAnnouncement()
         {
             string localizedParenthesisCount = m_OpenParenthesisCount.ToString();
             LocalizationSettings.GetInstance().LocalizeDisplayValue(ref localizedParenthesisCount);
@@ -758,7 +758,7 @@ namespace CalculatorApp.ViewModel
             AreTokensUpdated = true;
         }
 
-        void SetHistoryExpressionDisplay(
+        public void SetHistoryExpressionDisplay(
              CalculatorList<(string, int)> tokens,
             CalculatorList<IExpressionCommand> commands)
         {
@@ -897,7 +897,7 @@ namespace CalculatorApp.ViewModel
             }
         }
 
-        void FtoEButtonToggled()
+        public void FtoEButtonToggled()
         {
             OnButtonPressed(NumbersAndOperatorsEnum.FToE);
         }
@@ -1805,7 +1805,7 @@ namespace CalculatorApp.ViewModel
             m_standardCalculatorManager.SetPrecision(precision);
         }
 
-        void SwitchProgrammerModeBase(RADIX_TYPE radixType)
+        public void SwitchProgrammerModeBase(RADIX_TYPE radixType)
         {
             if (IsInError)
             {
@@ -2244,7 +2244,7 @@ namespace CalculatorApp.ViewModel
             BinDisplayValue_AutomationName = GetLocalizedStringFormat(m_localizedBinaryAutomationFormat, GetNarratorStringReadRawNumbers(BinaryDisplayValue));
         }
 
-        void SwitchAngleType(NumbersAndOperatorsEnum num)
+        public void SwitchAngleType(NumbersAndOperatorsEnum num)
         {
             OnButtonPressed(num);
         }

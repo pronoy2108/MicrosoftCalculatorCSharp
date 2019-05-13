@@ -28,6 +28,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CalcManager\ExpressionCommandInterface.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CalcManager\RadixType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CalcManager\RatPak.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CalcManager\UnitConversionManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\AlwaysSelectedCollectionView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\AppLifecycleLogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\AppResourceProvider.cs" />
@@ -56,9 +57,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Controls\OverflowTextBlockAutomationPeer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\RadixButton.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\SupplementaryItemsControl.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\AlwaysSelectedCollectionViewConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converters\BitFlipAutomationNameConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converters\BooleanNegationConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converters\BooleanToVisibilityConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\DelighterUnitToSyleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converters\ExpressionItemContainerStyle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converters\ExpressionItemTemplateSelector.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converters\ItemSizeToVisibilityConverter.cs" />
@@ -71,6 +74,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\MemoryItemViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\StandardCalculatorViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\UnitConverterViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\ViewState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Views\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -119,6 +123,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Views\OperatorsPanel.xaml.cs">
       <DependentUpon>OperatorsPanel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Views\StateTriggers\AspectRatioTrigger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Views\SupplementaryResults.xaml.cs">
       <DependentUpon>SupplementaryResults.xaml</DependentUpon>
     </Compile>

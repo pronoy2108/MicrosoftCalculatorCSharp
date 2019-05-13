@@ -15,14 +15,14 @@ namespace CalculatorApp
 	{
 
 		// NumbersAndOperatorsEnum
-		public int NumbersAndOperatorsEnum
-		{
-			get { return (int)GetValue(NumbersAndOperatorsEnumProperty); }
-			set { SetValue(NumbersAndOperatorsEnumProperty, value); }
+		public NumbersAndOperatorsEnum ButtonId
+        {
+			get { return (NumbersAndOperatorsEnum)GetValue(ButtonIdProperty); }
+			set { SetValue(ButtonIdProperty, value); }
 		}
 
-		public static readonly DependencyProperty NumbersAndOperatorsEnumProperty =
-			DependencyProperty.Register("AuditoryFeedback", typeof(int), typeof(CalculatorButton), new PropertyMetadata(null));
+		public static readonly DependencyProperty ButtonIdProperty =
+			DependencyProperty.Register("ButtonId", typeof(int), typeof(CalculatorButton), new PropertyMetadata(null));
 
 		// HoverBackground
 		public Brush HoverBackground
@@ -58,7 +58,7 @@ namespace CalculatorApp
 		public Brush PressForeground
 		{
 			get { return (Brush)GetValue(PressForegroundProperty); }
-			set { SetValue(PressBackgroundProperty, value); }
+			set { SetValue(PressForegroundProperty, value); }
 		}
 
 		public static readonly DependencyProperty PressForegroundProperty =

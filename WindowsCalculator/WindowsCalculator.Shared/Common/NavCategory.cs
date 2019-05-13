@@ -114,11 +114,11 @@ namespace CalculatorApp
             public event PropertyChangedEventHandler PropertyChanged;
             private void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName]string p = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(p));
 
-            string Name => m_name;
+            public string Name => m_name;
 
-            string AutomationName => m_varmationName;
+            public string AutomationName => m_varmationName;
 
-            string Glyph => m_glyph;
+            public string Glyph => m_glyph;
 
             int Position
             {
@@ -128,7 +128,7 @@ namespace CalculatorApp
                 }
             }
 
-            ViewMode Mode
+            public ViewMode Mode
             {
                 get
                 {
@@ -136,10 +136,9 @@ namespace CalculatorApp
                 }
             }
 
-            string
-                AutomationId => m_viewMode.ToString();
+            public string AutomationId => m_viewMode.ToString();
 
-            string AccessKey => m_accessKey;
+            public string AccessKey => m_accessKey;
 
             bool SupportsNegative
             {
@@ -359,7 +358,7 @@ namespace CalculatorApp
             }
 
             // This function should only be used when restoring the mode from app data.
-            ViewMode Deserialize(object obj)
+            static public ViewMode Deserialize(object obj)
             {
                 // If we cast directly to ViewMode we will fail
                 // because we technically store an int.
@@ -444,7 +443,7 @@ namespace CalculatorApp
                 return Math.Max(-1, position - 1);
             }
 
-            int GetFlatIndex(ViewMode mode)
+            public static int GetFlatIndex(ViewMode mode)
             {
                 int index = -1;
                 CategoryGroupType type = CategoryGroupType.None;
@@ -463,7 +462,7 @@ namespace CalculatorApp
             }
 
             // GetIndex is 0-based, GetPosition is 1-based
-            int GetIndexInGroup(ViewMode mode, CategoryGroupType type)
+            public static int GetIndexInGroup(ViewMode mode, CategoryGroupType type)
             {
                 int index = -1;
                 var iter = s_categoryManifest.FirstOrDefault(initializer =>
@@ -500,7 +499,7 @@ namespace CalculatorApp
                 return (iter != null) ? iter.Value.viewMode : ViewMode.None;
             }
 
-            List<MyVirtualKey> GetCategoryAcceleratorKeys()
+            public List<MyVirtualKey> GetCategoryAcceleratorKeys()
             {
                 List<MyVirtualKey> accelerators = new List<MyVirtualKey>();
                 foreach (var category in s_categoryManifest)

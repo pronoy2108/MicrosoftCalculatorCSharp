@@ -3,7 +3,7 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:Controls="using:WindowsCalculator.Shared.Controls"
 			 xmlns:common="using:WindowsCalculator.Shared.Common"
-			 xmlns:converters="using:WindowsCalculator.Shared.Converters"
+			 xmlns:converters="using:CalculatorApp.Converters"
 			 xmlns:local="using:WindowsCalculator.Shared">
 
 	<Application.Resources>

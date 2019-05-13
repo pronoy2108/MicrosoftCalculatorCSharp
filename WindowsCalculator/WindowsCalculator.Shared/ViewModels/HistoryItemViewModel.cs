@@ -14,12 +14,12 @@ namespace CalculatorApp
         [Windows.UI.Xaml.Data.Bindable]
         public sealed class HistoryItemViewModel : ICustomPropertyProvider
         {
-            CalculatorList<(string, int)> GetTokens()
+            public CalculatorList<(string, int)> GetTokens()
             {
                 return m_spTokens;
             }
 
-            CalculatorList<IExpressionCommand> GetCommands()
+            public CalculatorList<IExpressionCommand> GetCommands()
             {
                 return m_spCommands;
             }

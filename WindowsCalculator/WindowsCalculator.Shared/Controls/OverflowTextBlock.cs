@@ -238,7 +238,7 @@ namespace WindowsCalculator.Shared.Controls
             }
         }
 
-        void UnregisterEventHandlers()
+        public void UnregisterEventHandlers()
         {
             // UNO TODO Unregister
 

@@ -23,7 +23,7 @@ using System;
 using System.Diagnostics;
 using System.Collections.ObjectModel;
 
-namespace CalculatorApp
+namespace CalculatorApp.ViewModel
 {
     public class ApplicationViewModel : INotifyPropertyChanged
     {
@@ -76,6 +76,7 @@ namespace CalculatorApp
 
         public ViewMode Mode
         {
+            get => m_mode;
             set
             {
                 if (m_mode != value)
@@ -100,7 +101,7 @@ namespace CalculatorApp
             }
         }
 
-        void Initialize(ViewMode mode)
+        public void Initialize(ViewMode mode)
         {
             if (!NavCategory.IsValidViewMode(mode))
             {

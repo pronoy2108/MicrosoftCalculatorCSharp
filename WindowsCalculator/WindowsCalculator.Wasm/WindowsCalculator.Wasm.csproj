@@ -6,7 +6,7 @@
     <WasmHead>true</WasmHead>
     <DefineConstants>$(DefineConstants);__WASM__</DefineConstants>
     <NoWarn>NU1701</NoWarn>
-    <BuildingInsideUnoSourceGenerator>true</BuildingInsideUnoSourceGenerator>
+    <!--<BuildingInsideUnoSourceGenerator>true</BuildingInsideUnoSourceGenerator>-->
   </PropertyGroup>
   <ItemGroup>
     <Content Include="..\WindowsCalculator.UWP\Assets\*.png" Link="Assets\%(FileName)%(Extension)" />

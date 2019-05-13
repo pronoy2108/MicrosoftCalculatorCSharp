@@ -5,7 +5,7 @@ using Uno.UI.Converters;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 
-namespace WindowsCalculator.Shared.Converters
+namespace CalculatorApp.Converters
 {
     public class BooleanToVisibilityConverter : IValueConverter
     {

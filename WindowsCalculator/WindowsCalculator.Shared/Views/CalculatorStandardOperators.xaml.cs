@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,13 +15,30 @@ using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace WindowsCalculator.Shared.Views
+namespace CalculatorApp
 {
 	public sealed partial class CalculatorStandardOperators : UserControl
 	{
-		public CalculatorStandardOperators()
+        private bool m_isErrorVisualState;
+
+        public CalculatorStandardOperators()
 		{
 			this.InitializeComponent();
-		}
-	}
+        }
+
+        public bool IsErrorVisualState
+        {
+            get => m_isErrorVisualState;
+            set
+            {
+                if (m_isErrorVisualState != value)
+                {
+                    m_isErrorVisualState = value;
+                    String newState = m_isErrorVisualState ? "ErrorLayout" : "NoErrorLayout";
+                    VisualStateManager.GoToState(this, newState, false);
+                    NumberPad.IsErrorVisualState = m_isErrorVisualState;
+                }
+            }
+        }
+    }
 }

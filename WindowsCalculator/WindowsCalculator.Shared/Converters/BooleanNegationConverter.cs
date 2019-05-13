@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Uno.UI.Converters;
 
-namespace WindowsCalculator.Shared.Converters
+namespace CalculatorApp.Converters
 {
 	class BooleanNegationConverter : ConverterBase
 	{

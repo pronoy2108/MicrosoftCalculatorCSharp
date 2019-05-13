@@ -9,7 +9,7 @@
              xmlns:vm="using:WindowsCalculator.Shared.ViewModel"
              mc:Ignorable="">
 
-	<UserControl.Resources>
+	<!--<UserControl.Resources>
 		<DataTemplate x:Name="SupplementaryValueTemplate"
 									x:DataType="vm:SupplementaryResult">
 			<StackPanel Margin="0"
@@ -106,5 +106,5 @@
 																				IsTextScaleFactorEnabled="False"
 																				ItemTemplateSelector="{StaticResource ResultTemplateSelector}"
 																				LayoutUpdated="OnSupplementaryValuesLayoutUpdated" />
-	</StackPanel>
+	</StackPanel>-->
 </UserControl>

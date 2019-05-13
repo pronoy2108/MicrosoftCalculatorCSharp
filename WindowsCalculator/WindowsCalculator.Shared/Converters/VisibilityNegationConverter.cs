@@ -7,7 +7,7 @@ using Windows.Foundation.Metadata;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml;
 
-namespace WindowsCalculator.Shared.Converters
+namespace CalculatorApp.Converters
 {
 	[WebHostHidden]
 	public sealed class VisibilityNegationConverter : IValueConverter

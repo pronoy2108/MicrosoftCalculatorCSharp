@@ -8,7 +8,7 @@ using Windows.UI.Xaml.Data;
 using CalculationManager;
 using CalculatorApp;
 
-namespace WindowsCalculator.Shared.Converters
+namespace CalculatorApp.Converters
 {
 	[WebHostHidden]
 	class RadixToStringConverter : IValueConverter

@@ -9,9 +9,9 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
-namespace WindowsCalculator.Shared.Controls
+namespace CalculatorApp.Conrols
 {
-	class RadixButton : RadioButton
+	public class RadixButton : RadioButton
 	{
 		public RadixButton()
 		{
