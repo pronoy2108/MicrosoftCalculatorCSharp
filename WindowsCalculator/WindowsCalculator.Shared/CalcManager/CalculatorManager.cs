@@ -76,7 +76,7 @@ namespace CalculationManager
         public void BinaryOperatorReceived() => throw new NotImplementedException();
         public void MemoryItemChanged(int indexOfMemory) => throw new NotImplementedException();
 
-        public CalculatorManager(ICalcDisplay displayCallback, IResourceProvider* resourceProvider) => throw new NotImplementedException();
+        public CalculatorManager(ICalcDisplay displayCallback, IResourceProvider resourceProvider) => throw new NotImplementedException();
 
         public void Reset(bool clearMemory = true) => throw new NotImplementedException();
         public void SetStandardMode() => throw new NotImplementedException();

@@ -265,17 +265,17 @@ namespace CalculatorApp
                 return m_numberGroupSeparator;
             }
 
-            string GetDecimalSeparatorStr()
+            public string GetDecimalSeparatorStr()
             {
                 return m_decimalSeparator.ToString();
             }
 
-            string GetNumberGroupingSeparatorStr() 
+            public string GetNumberGroupingSeparatorStr() 
             {
                 return m_numberGroupSeparator.ToString();
             }
 
-            string GetNumberGroupingStr()
+            public string GetNumberGroupingStr()
             {
                 return m_numberGrouping;
             }

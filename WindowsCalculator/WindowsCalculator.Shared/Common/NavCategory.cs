@@ -430,7 +430,7 @@ namespace CalculatorApp
                 return (iter != null) ? iter.Value.nameResourceKey + "Text" : null;
             }
 
-            CategoryGroupType GetGroupType(ViewMode mode)
+            public static CategoryGroupType GetGroupType(ViewMode mode)
             {
                 var iter = s_categoryManifest.FirstOrDefault(c => c.Value.viewMode == mode);
 

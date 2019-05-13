@@ -528,7 +528,7 @@ namespace CalculatorApp.Common
 
         static Dictionary<string, string> s_tokenToReadableNameMap = GetTokenToReadableNameMap();
 
-        string GetNarratorReadableToken(string rawToken)
+        public static string GetNarratorReadableToken(string rawToken)
         {
 
             var itr = s_tokenToReadableNameMap.find(rawToken.Data());

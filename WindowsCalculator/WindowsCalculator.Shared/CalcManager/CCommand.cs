@@ -1,27 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
-namespace CalculatorApp
+/****************************Module*Header***********************************
+* Module Name: CCommand.h
+*
+* Module Description:
+*       Resource ID's for the Engine Commands exposed.
+*
+* Warnings:
+*
+* Created: 13-Feb-2008
+*
+\****************************************************************************/
+
+// The following are the valid id's which can be passed to CCalcEngine::ProcessCommand
+
+namespace CalculationManager
 {
+
     public static class CCommand
     {
-        // Copyright (c) Microsoft Corporation. All rights reserved.
-        // Licensed under the MIT License.
-
-        /****************************Module*Header***********************************
-        * Module Name: CCommand.h
-        *
-        * Module Description:
-        *       Resource ID's for the Engine Commands exposed.
-        *
-        * Warnings:
-        *
-        * Created: 13-Feb-2008
-        *
-        \****************************************************************************/
-
-        // The following are the valid id's which can be passed to CCalcEngine::ProcessCommand
         public const int IDM_HEX = 313;
         public const int IDM_DEC = 314;
         public const int IDM_OCT = 315;
@@ -103,7 +101,7 @@ namespace CalculatorApp
         public const int IDC_REC = 114;
         public const int IDC_DMS = 115;
         public const int IDC_CUBEROOT = 116; // x ^ 1/3;
-        public const int IDC_POW10 = 117;   // 10 ^ x;
+        public const int IDC_POW10 = 117;    // 10 ^ x;
         public const int IDC_PERCENT = 118;
         public const int IDC_UNARYLAST = IDC_PERCENT;
 
@@ -214,6 +212,5 @@ namespace CalculatorApp
         // resource for the purpose internal to Engine and cant be used by the clients
         public const int IDS_ENGINESTR_FIRST = 0;
         public const int IDS_ENGINESTR_MAX = 200;
-
     }
 }

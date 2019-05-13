@@ -1,11 +1,12 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using CalculatorApp;
+using System;
 
 namespace CalculationManager
 {
-    public class ISerializeCommandVisitor
+    public interface ISerializeCommandVisitor
     {
         void Visit(COpndCommand opndCmd);
         void Visit(CUnaryCommand unaryCmd);
@@ -53,5 +54,55 @@ namespace CalculationManager
     public interface IParenthesisCommand : IExpressionCommand
     {
         int GetCommand();
+    }
+
+
+
+
+    public class CParentheses : IParenthesisCommand
+    {
+        public CParentheses(int command) => throw new NotImplementedException();
+        public int GetCommand() => throw new NotImplementedException();
+        public CalculationManager.CommandType GetCommandType() => throw new NotImplementedException();
+        public void Accept(ISerializeCommandVisitor commandVisitor) => throw new NotImplementedException();
+    }
+
+    public class CUnaryCommand : IUnaryCommand
+    {
+        public CUnaryCommand(int command) => throw new NotImplementedException();
+        public CUnaryCommand(int command1, int command2) => throw new NotImplementedException();
+        public CalculatorList<int> GetCommands() => throw new NotImplementedException();
+        public CalculationManager.CommandType GetCommandType() => throw new NotImplementedException();
+        public void SetCommand(int command) => throw new NotImplementedException();
+        public void SetCommands(int command1, int command2) => throw new NotImplementedException();
+        public void Accept(ISerializeCommandVisitor commandVisitor) => throw new NotImplementedException();
+    }
+
+    public class CBinaryCommand : IBinaryCommand
+    {
+        public CBinaryCommand(int command) => throw new NotImplementedException();
+        public void SetCommand(int command) => throw new NotImplementedException();
+        public int GetCommand() => throw new NotImplementedException();
+        public CommandType GetCommandType() => throw new NotImplementedException();
+        public void Accept(ISerializeCommandVisitor commandVisitor) => throw new NotImplementedException();
+    }
+
+    public class COpndCommand : IOpndCommand
+    {
+        public COpndCommand(CalculatorList<int> commands, bool fNegative, bool fDecimal, bool fSciFmt) => throw new NotImplementedException();
+        // public void Initialize(CalcEngine.Rational rat) => throw new NotImplementedException();
+
+        public CalculatorList<int> GetCommands() => throw new NotImplementedException();
+        public void SetCommands(CalculatorList<int> commands) => throw new NotImplementedException();
+        public void AppendCommand(int command) => throw new NotImplementedException();
+        public void ToggleSign() => throw new NotImplementedException();
+        public void RemoveFromEnd() => throw new NotImplementedException();
+        public bool IsNegative() => throw new NotImplementedException();
+        public bool IsSciFmt() => throw new NotImplementedException();
+        public bool IsDecimalPresent() => throw new NotImplementedException();
+        public string GetToken(char decimalSymbol) => throw new NotImplementedException();
+        public CalculationManager.CommandType GetCommandType() => throw new NotImplementedException();
+        public void Accept(ISerializeCommandVisitor commandVisitor) => throw new NotImplementedException();
+        public string GetString(uint radix, int precision) => throw new NotImplementedException();
     }
 }

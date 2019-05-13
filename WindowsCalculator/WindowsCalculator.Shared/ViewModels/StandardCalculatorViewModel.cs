@@ -6,9 +6,6 @@ using CalculatorApp.Common;
 using CalculatorApp.Common.Automation;
 using CalculatorApp.ViewModel;
 using CalculationManager;
-using Platform;
-using Platform.Collections;
-using std;
 using Windows.ApplicationModel.Resources;
 using Windows.Foundation;
 using Windows.System;
@@ -21,10 +18,13 @@ using System;
 using System.ComponentModel;
 using System.Windows.Input;
 using System.Collections.Generic;
-using static CalculatorApp.CCommand;
+using static CalculationManager.CCommand;
 using System.Text;
 using Uno.Extensions;
 using System.Linq;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+using Uno.UI.Common;
 
 namespace CalculatorApp.ViewModel
 {
@@ -88,8 +88,8 @@ namespace CalculatorApp.ViewModel
         public string DisplayStringExpression { get => m_DisplayStringExpression; set { m_DisplayStringExpression = value; RaisePropertyChanged("DisplayStringExpression"); } }
 
 
-        private Windows.Foundation.Collections.IObservableList<Common.DisplayExpressionToken> m_ExpressionTokens;
-        public Windows.Foundation.Collections.IObservableList<Common.DisplayExpressionToken> ExpressionTokens { get => m_ExpressionTokens; private set { m_ExpressionTokens = value; RaisePropertyChanged("ExpressionTokens"); } }
+        private ObservableCollection<Common.DisplayExpressionToken> m_ExpressionTokens;
+        public ObservableCollection<Common.DisplayExpressionToken> ExpressionTokens { get => m_ExpressionTokens; private set { m_ExpressionTokens = value; RaisePropertyChanged("ExpressionTokens"); } }
 
 
         private string m_DecimalDisplayValue;
@@ -221,25 +221,19 @@ namespace CalculatorApp.ViewModel
         private uint m_OpenParenthesisCount;
         public uint OpenParenthesisCount { get => m_OpenParenthesisCount; private set { m_OpenParenthesisCount = value; RaisePropertyChanged("OpenParenthesisCount"); } }
 
-        public ICommand CopyCommand { get; } = new DelegateCommand(OnCopyCommand);
+        public ICommand CopyCommand { get; }
 
+        public ICommand PasteCommand { get; }
 
-        public ICommand PasteCommand { get; } = new DelegateCommand(OnPasteCommand);
+        public ICommand ButtonPressed { get; }
 
+        public ICommand ClearMemoryCommand { get; }
 
-        public ICommand ButtonPressed { get; } = new DelegateCommand(OnButtonPressed);
+        public ICommand MemoryItemPressed { get; }
 
+        public ICommand MemoryAdd { get; }
 
-        public ICommand ClearMemoryCommand { get; } = new DelegateCommand(OnClearMemoryCommand);
-
-
-        public ICommand MemoryItemPressed { get; } = new DelegateCommand(OnMemoryItemPressed);
-
-
-        public ICommand MemoryAdd { get; } = new DelegateCommand(OnMemoryAdd);
-
-
-        public ICommand MemorySubtract { get; } = new DelegateCommand(OnMemorySubtract);
+        public ICommand MemorySubtract { get; } 
 
         bool IsShiftChecked
         {
@@ -523,9 +517,9 @@ namespace CalculatorApp.ViewModel
             m_HexDisplayValue = "0";
             m_BinaryDisplayValue = "0";
             m_OctalDisplayValue = "0";
-            // m_standardCalculatorManager = &m_calculatorDisplay, &m_resourceProvider;
-            m_ExpressionTokens = new List<DisplayExpressionToken>();
-            m_MemorizedNumbers = new List<MemoryItemViewModel ();
+            m_standardCalculatorManager = new CalculatorManager(m_calculatorDisplay, m_resourceProvider);
+            m_ExpressionTokens = new ObservableCollection<DisplayExpressionToken>();
+            m_MemorizedNumbers = new List<MemoryItemViewModel>();
             m_IsMemoryEmpty = true;
             m_IsFToEChecked = false;
             m_isShiftChecked = false;
@@ -551,6 +545,13 @@ namespace CalculatorApp.ViewModel
             m_localizedOpenParenthesisCountChangedAutomationFormat = null;
             m_localizedNoRightParenthesisAddedFormat = null;
 
+            CopyCommand = new DelegateCommand<object>(OnCopyCommand);
+            PasteCommand = new DelegateCommand<object>(OnPasteCommand);
+            ButtonPressed = new DelegateCommand<object>(OnButtonPressed);
+            ClearMemoryCommand = new DelegateCommand<object>(OnClearMemoryCommand);
+            MemoryItemPressed = new DelegateCommand<object>(OnMemoryItemPressed);
+            MemoryAdd = new DelegateCommand<object>(OnMemoryAdd);
+            MemorySubtract = new DelegateCommand<object>(OnMemorySubtract);
 
             m_calculatorDisplay.SetCallback(new WeakReference(this));
             m_expressionAutomationNameFormat = AppResourceProvider.GetInstance().GetResourceString(CalculatorExpression);
@@ -809,9 +810,9 @@ namespace CalculatorApp.ViewModel
                     }
 
                     var currentTokenString = currentToken.Item1;
-                    if (i < m_ExpressionTokens.Size)
+                    if (i < m_ExpressionTokens.Count)
                     {
-                        var existingItem = m_ExpressionTokens.GetAt(i);
+                        var existingItem = m_ExpressionTokens[i];
                         if (type == existingItem.Type && existingItem.Token.Equals(currentTokenString))
                         {
                             existingItem.TokenPosition = i;
@@ -821,7 +822,7 @@ namespace CalculatorApp.ViewModel
                         else
                         {
                             var expressionToken = new DisplayExpressionToken(currentTokenString, i, isEditable, type);
-                            m_ExpressionTokens.InsertAt(i, expressionToken);
+                            m_ExpressionTokens.Insert(i, expressionToken);
                         }
                     }
                     else
@@ -832,9 +833,9 @@ namespace CalculatorApp.ViewModel
                 }
             }
 
-            while (m_ExpressionTokens.Size != nTokens)
+            while (m_ExpressionTokens.Count != nTokens)
             {
-                m_ExpressionTokens.RemoveAtEnd();
+                m_ExpressionTokens.RemoveAt(m_ExpressionTokens.Count - 1);
             }
         }
 
@@ -903,7 +904,7 @@ namespace CalculatorApp.ViewModel
 
         void HandleUpdatedOperandData(Command cmdenum)
         {
-            DisplayExpressionToken displayExpressionToken = ExpressionTokens.GetAt(m_tokenPosition);
+            DisplayExpressionToken displayExpressionToken = ExpressionTokens[m_tokenPosition];
             if (displayExpressionToken == null)
             {
                 return;
@@ -1203,7 +1204,7 @@ namespace CalculatorApp.ViewModel
 
             // Ensure that the paste happens on the UI thread
             CopyPasteManager.GetStringToPaste(mode, NavCategory.GetGroupType(mode), NumberBase, bitLengthType)
-                .then([this, mode](String pastedString) { OnPaste(pastedString, mode); }, concurrency.task_continuation_context.use_current());
+                .ContinueWith(async (Task<string> pastedString, object s) => { OnPaste(await pastedString, mode); }, null);
         }
 
         CalculationManager.Command ConvertToOperatorsEnum(NumbersAndOperatorsEnum operation)
@@ -1583,7 +1584,7 @@ namespace CalculatorApp.ViewModel
                     m_standardCalculatorManager.MemorizedNumberClear(unsignedPosition);
 
                     MemorizedNumbers.RemoveAt(unsignedPosition);
-                    for (uint i = 0; i < MemorizedNumbers.Count; i++)
+                    for (int i = 0; i < MemorizedNumbers.Count; i++)
                     {
                         MemorizedNumbers[i].Position = i;
                     }
@@ -1787,7 +1788,7 @@ namespace CalculatorApp.ViewModel
         //     'displayValue' is a localized string containing a numerical value to be displayed to the user.
         String GetLocalizedStringFormat(String format, String displayValue)
         {
-            String localizedString = new String(LocalizationStringUtil.GetLocalizedString(format, displayValue));
+            String localizedString = LocalizationStringUtil.GetLocalizedString(format, displayValue);
             return localizedString;
         }
 
@@ -1891,6 +1892,7 @@ namespace CalculatorApp.ViewModel
                         break;
                     default:
                         updatedToken = CCalcEngine.OpCodeToUnaryString(nOpCode, false, angleType);
+                        break;
                 }
                 if ((token.Item1.Length > 0) && (token.Item1[token.Item1.Length - 1] == '('))
                 {
@@ -1934,7 +1936,7 @@ namespace CalculatorApp.ViewModel
                 selectedToken.Item1 = updatedToken;
                 IFTPlatformException(m_tokens.SetAt(tokenPosition, selectedToken));
 
-                DisplayExpressionToken displayExpressionToken = ExpressionTokens.GetAt(tokenPosition);
+                DisplayExpressionToken displayExpressionToken = ExpressionTokens[tokenPosition];
                 displayExpressionToken.Token = updatedToken;
 
                 // Special casing
@@ -1955,7 +1957,7 @@ namespace CalculatorApp.ViewModel
             List<int> currentCommands = new List<int>();
             int commandListCount;
             m_commands.GetSize(out commandListCount);
-            for (uint i = 0; i < commandListCount; i++)
+            for (int i = 0; i < commandListCount; i++)
             {
                 IExpressionCommand command;
                 IFTPlatformException(m_commands.GetAt(i, out command));
@@ -1971,7 +1973,7 @@ namespace CalculatorApp.ViewModel
                     unaryCommands.GetSize(out unaryCommandCount);
 
                     int nUCode;
-                    for (uint j = 0; j < unaryCommandCount; ++j)
+                    for (int j = 0; j < unaryCommandCount; ++j)
                     {
                         IFTPlatformException(unaryCommands.GetAt(j, out nUCode));
                         currentCommands.Add(nUCode);
@@ -1994,12 +1996,12 @@ namespace CalculatorApp.ViewModel
                 {
                     IOpndCommand spCommand = (IOpndCommand)(command);
                     CalculatorList<int> opndCommands = spCommand.GetCommands();
-                    uint opndCommandCount;
+                    int opndCommandCount;
                     opndCommands.GetSize(out opndCommandCount);
                     bool fNeedIDCSign = spCommand.IsNegative();
 
                     int nOCode;
-                    for (uint j = 0; j < opndCommandCount; ++j)
+                    for (int j = 0; j < opndCommandCount; ++j)
                     {
                         IFTPlatformException(opndCommands.GetAt(j, out nOCode));
                         currentCommands.Add(nOCode);
@@ -2388,7 +2390,7 @@ namespace CalculatorApp.ViewModel
                 commands.Append(num);
             }
 
-            uint size = 0;
+            int size = 0;
             commands.GetSize(out size);
             if (size > 0)
             {
@@ -2401,7 +2403,7 @@ namespace CalculatorApp.ViewModel
         public void OnMaxDigitsReached()
         {
             String announcement = LocalizationStringUtil.GetLocalizedNarratorAnnouncement(
-                MaxDigitsReachedFormat, m_localizedMaxDigitsReachedAutomationFormat, m_CalculationResultAutomationName.Data());
+                MaxDigitsReachedFormat, m_localizedMaxDigitsReachedAutomationFormat, m_CalculationResultAutomationName);
 
             Announcement = CalculatorAnnouncement.GetMaxDigitsReachedAnnouncement(announcement);
         }
@@ -2414,7 +2416,7 @@ namespace CalculatorApp.ViewModel
         NarratorAnnouncement GetDisplayUpdatedNarratorAnnouncement()
         {
             String announcement;
-            if (m_feedbackForButtonPress == null || m_feedbackForButtonPress.IsEmpty())
+            if (m_feedbackForButtonPress == null || string.IsNullOrEmpty(m_feedbackForButtonPress))
             {
                 announcement = m_CalculationResultAutomationName;
             }
@@ -2423,8 +2425,8 @@ namespace CalculatorApp.ViewModel
                 announcement = LocalizationStringUtil.GetLocalizedNarratorAnnouncement(
                     ButtonPressFeedbackFormat,
                     m_localizedButtonPressFeedbackAutomationFormat,
-                    m_CalculationResultAutomationName.Data(),
-                    m_feedbackForButtonPress.Data());
+                    m_CalculationResultAutomationName,
+                    m_feedbackForButtonPress);
             }
 
             // Make sure we don't accidentally repeat an announcement.
@@ -2432,5 +2434,7 @@ namespace CalculatorApp.ViewModel
 
             return CalculatorAnnouncement.GetDisplayUpdatedAnnouncement(announcement);
         }
+
+        private void IFTPlatformException(bool result) { /* hresult validation is not used in C# */}
     }
 }
