@@ -13,7 +13,7 @@ namespace WindowsCalculator.Shared.Controls
 	class OperatorTextBox : TextBox
 	{
 
-		override void OnApplyTemplate()
+		protected override void OnApplyTemplate()
 		{
 			this.IsEnabled = false;
 			this.IsHitTestVisible = false;
@@ -25,8 +25,8 @@ namespace WindowsCalculator.Shared.Controls
 
 			var parent = VisualTreeHelper.GetParent(this);
 
-			ListViewItem listViewItem;
-			ListView listView;
+			ListViewItem listViewItem = null;
+			ListView listView = null;
 
 			while (parent != null)
 			{
@@ -50,7 +50,7 @@ namespace WindowsCalculator.Shared.Controls
 				listViewItem.IsTapEnabled = false;
 			}
 
-			TextBox.OnApplyTemplate();
+			base.OnApplyTemplate();
 		}
 	}
 }

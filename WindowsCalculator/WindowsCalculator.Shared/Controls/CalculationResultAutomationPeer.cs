@@ -7,32 +7,33 @@ using Windows.UI.Xaml.Automation.Provider;
 
 namespace WindowsCalculator.Shared.Controls
 {
-	sealed class CalculationResultAutomationPeer : FrameworkElementAutomationPeer, IInvokeProvider
-	{
+	sealed class CalculationResultAutomationPeer : FrameworkElementAutomationPeer /* UNO TODO , IInvokeProvider*/
+    {
         public CalculationResultAutomationPeer(FrameworkElement owner)
 		{
 
 		}
 
-		override virtual AutomationControlType GetAutomationControlTypeCore()
+		protected override AutomationControlType GetAutomationControlTypeCore()
 		{
-			return AutomationControlType::Text;
+			return AutomationControlType.Text;
 		}
 
-		override virtual Object GetPatternCore(PatternInterface pattern)
-		{
-			if (pattern == PatternInterface.Invoke)
-			{
-				return this;
-			}
+        // UNO TODO
+		//override virtual object GetPatternCore(PatternInterface pattern)
+		//{
+		//	if (pattern == PatternInterface.Invoke)
+		//	{
+		//		return this;
+		//	}
 
-			return FrameworkElementAutomationPeer.GetPatternCore(pattern);
-		}
+		//	return FrameworkElementAutomationPeer.GetPatternCore(pattern);
+		//}
 
-        virtual void Invoke()
-		{
-			var owner = Owner as CalculationResult;
-			owner.ProgrammaticSelect();
-		}
+  //      virtual void Invoke()
+		//{
+		//	var owner = Owner as CalculationResult;
+		//	owner.ProgrammaticSelect();
+		//}
 	}
 }

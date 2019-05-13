@@ -46,7 +46,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\NavCategory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\TitleBarHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utils.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Controls\AppBar.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\CalculationResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\CalculationResultAutomationPeer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\CalculatorButton.cs" />

@@ -36,7 +36,7 @@ namespace CalculatorApp
             return true;
         }
 
-        public bool RemoveAt(uint index)
+        public bool RemoveAt(int index)
         {
             if (index < m_vector.Count)
             {
@@ -56,11 +56,10 @@ namespace CalculatorApp
             return true;
         }
 
-        public bool Truncate(uint index)
+        public bool Truncate(int index)
         {
             if (index < m_vector.Count)
             {
-                var startIter = m_vector.begin() + index;
                 m_vector.RemoveRange(index, m_vector.Count - index);
             }
             else
@@ -90,39 +89,43 @@ namespace CalculatorApp
 
         public bool GetString(out string expression)
         {
-            int nTokens = 0;
-            (string, int) currentPair;
-            var hr = this.GetSize(out nTokens);
-            if (hr)
-            {
-                for (uint i = 0; i < nTokens; i++)
-                {
-                    hr = this.GetAt(i, out currentPair);
-                    if (SUCCEEDED(hr))
-                    {
-                        expression.append(currentPair.first);
+            // UNO TODO
+            //int nTokens = 0;
+            //(string, int) currentPair;
+            //var hr = this.GetSize(out nTokens);
+            //if (hr)
+            //{
+            //    for (int i = 0; i < nTokens; i++)
+            //    {
+            //        hr = this.GetAt(i, out currentPair);
+            //        if ((hr))
+            //        {
+            //            expression.append(currentPair.first);
 
-                        if (i != (nTokens - 1))
-                        {
-                            expression.append(" ");
-                        }
-                    }
-                }
+            //            if (i != (nTokens - 1))
+            //            {
+            //                expression.append(" ");
+            //            }
+            //        }
+            //    }
 
-                string expressionSuffix;
-                hr = GetExpressionSuffix(&expressionSuffix);
-                if (hr)
-                {
-                    expression += expressionSuffix;
-                }
-            }
+            //    string expressionSuffix;
+            //    hr = GetExpressionSuffix(&expressionSuffix);
+            //    if (hr)
+            //    {
+            //        expression += expressionSuffix;
+            //    }
+            //}
 
-            return true;
+            // return true;
+
+            expression = "";
+            return false;
         }
 
         public bool GetExpressionSuffix(out string suffix)
         {
-            *suffix = " =";
+            suffix = " =";
             return true;
         }
     }

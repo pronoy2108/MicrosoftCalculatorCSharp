@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace CalculatorApp
 {
     // Callback interface to be implemented by the CalculatorManager
-    class CalculatorDisplay : ICalcDisplay
+    public class CalculatorDisplay : ICalcDisplay
     {
         private WeakReference m_callbackReference;
         private WeakReference m_historyCallbackReference;
@@ -39,7 +39,7 @@ namespace CalculatorApp
             }
         }
 
-        public void SetParenthesisNumber(uint parenthesisCount)
+        public void SetParenthesisNumber(int parenthesisCount)
         {
             if (m_callbackReference != null)
             {
@@ -96,7 +96,7 @@ namespace CalculatorApp
             }
         }
 
-        public void OnHistoryItemAdded(uint addedItemIndex)
+        public void OnHistoryItemAdded(int addedItemIndex)
         {
             if (m_historyCallbackReference != null)
             {
@@ -129,7 +129,7 @@ namespace CalculatorApp
             }
         }
 
-        public void MemoryItemChanged(uint indexOfMemory)
+        public void MemoryItemChanged(int indexOfMemory)
         {
             if (m_callbackReference != null)
             {

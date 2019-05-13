@@ -16,9 +16,8 @@ namespace WindowsCalculator.Shared.Controls
 {
 	sealed class OverflowTextBlockAutomationPeer : FrameworkElementAutomationPeer
 	{
-		// MAX?
 		public OverflowTextBlockAutomationPeer(OverflowTextBlock owner) :
-			FrameworkElementAutomationPeer(owner)
+			base(owner)
 		{ }
 
 		override protected AutomationControlType GetAutomationControlTypeCore()
@@ -26,7 +25,7 @@ namespace WindowsCalculator.Shared.Controls
 			return AutomationControlType.Text;
 		}
 
-		override protected Vector<AutomationPeer> GetChildrenCore()
+		override protected IList<AutomationPeer> GetChildrenCore()
 		{
 			return null;
 		}

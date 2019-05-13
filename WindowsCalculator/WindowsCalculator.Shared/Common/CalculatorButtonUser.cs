@@ -161,7 +161,7 @@ namespace CalculatorApp
     // This contains list of functions whose usage we are tracelogging
     public enum FunctionLogEnum
     {
-        Invert = (int) CM.Command.CommandREC,
+        Invert = (int)CM.Command.CommandREC,
         Sqrt = (int)CM.Command.CommandSQRT,
         Percent = (int)CM.Command.CommandPERCENT,
         Negate = (int)CM.Command.CommandSIGN,
@@ -204,6 +204,5 @@ namespace CalculatorApp
         InvTanh = (int)CM.Command.CommandATANH,
         Cube = (int)CM.Command.CommandCUB,
         DMS = (int)CM.Command.CommandDMS,
-        }
     }
 }

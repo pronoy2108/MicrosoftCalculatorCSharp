@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CalculatorApp.Common;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
@@ -266,9 +267,7 @@ namespace WindowsCalculator.Shared.Controls
 		{
 			string rawValue;
 
-			/* MAX?
-			LocalizationSettings.GetInstance().RemoveGroupSeparators(DisplayValue.Data, DisplayValue.Length, rawValue);
-			*/
+			LocalizationSettings.GetInstance().RemoveGroupSeparators(DisplayValue, DisplayValue.Length, out rawValue);
 
 			return rawValue.ToString();
 		}

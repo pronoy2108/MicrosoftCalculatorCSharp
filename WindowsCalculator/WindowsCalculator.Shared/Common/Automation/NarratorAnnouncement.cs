@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#pragma once
-
 namespace CalculatorApp.Common.Automation
 {
     // These enum types are copied from the types available in

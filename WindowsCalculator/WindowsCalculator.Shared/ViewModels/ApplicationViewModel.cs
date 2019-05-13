@@ -3,15 +3,10 @@
 
 using CalculatorApp;
 using CalculatorApp.Common;
-using CalculatorApp.DataLoaders;
 using CalculatorApp.ViewModel;
 using CalculationManager;
-using Platform;
-using Platform.Collections;
-using std;
 using Windows.System;
 using Windows.Storage;
-using Utils;
 using Windows.Foundation.Collections;
 using Windows.Globalization;
 using Windows.UI.ViewManagement;
@@ -23,6 +18,10 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using System.ComponentModel;
 using System.Windows.Input;
+using Uno.UI.Common;
+using System;
+using System.Diagnostics;
+using System.Collections.ObjectModel;
 
 namespace CalculatorApp
 {
@@ -37,13 +36,14 @@ namespace CalculatorApp
         private StandardCalculatorViewModel m_CalculatorViewModel;
         public StandardCalculatorViewModel CalculatorViewModel { get => m_CalculatorViewModel; set { m_CalculatorViewModel = value; RaisePropertyChanged("CalculatorViewModel"); } }
 
+        // UNO TODO
+        //private DateCalculatorViewModel m_DateCalcViewModel;
+        //public DateCalculatorViewModel DateCalcViewModel { get => m_DateCalcViewModel; set { m_DateCalcViewModel = value; RaisePropertyChanged("DateCalcViewModel"); } }
 
-        private DateCalculatorViewModel m_DateCalcViewModel;
-        public DateCalculatorViewModel DateCalcViewModel { get => m_DateCalcViewModel; set { m_DateCalcViewModel = value; RaisePropertyChanged("DateCalcViewModel"); } }
 
-
-        private UnitConverterViewModel m_ConverterViewModel;
-        public UnitConverterViewModel ConverterViewModel { get => m_ConverterViewModel; set { m_ConverterViewModel = value; RaisePropertyChanged("ConverterViewModel"); } }
+        // UNO TODO
+        //private UnitConverterViewModel m_ConverterViewModel;
+        //public UnitConverterViewModel ConverterViewModel { get => m_ConverterViewModel; set { m_ConverterViewModel = value; RaisePropertyChanged("ConverterViewModel"); } }
 
 
         private CalculatorApp.Common.ViewMode m_PreviousMode;
@@ -55,23 +55,26 @@ namespace CalculatorApp
         public string CategoryName { get => m_CategoryName; set { m_CategoryName = value; RaisePropertyChanged("CategoryName"); } }
 
 
-        public ICommand CopyCommand { get; } = new DelegateCommand(ApplicationViewModel.OnCopyCommand);
+        public ICommand CopyCommand { get; }
 
 
-        public ICommand PasteCommand { get; } = new DelegateCommand(ApplicationViewModel.OnPasteCommand);
+        public ICommand PasteCommand { get; }
 
 
 
 
         ViewMode m_mode;
-        IObservableVector<NavCategoryGroup> m_categories;
+        ObservableCollection<NavCategoryGroup> m_categories;
 
-        ApplicationViewModel()
+        public ApplicationViewModel()
         {
+            CopyCommand = new DelegateCommand<object>(OnCopyCommand);
+            PasteCommand  = new DelegateCommand<object>(OnPasteCommand);
+
             SetMenuCategories();
         }
 
-        ViewMode Mode
+        public ViewMode Mode
         {
             set
             {
@@ -80,12 +83,12 @@ namespace CalculatorApp
                     PreviousMode = m_mode;
                     m_mode = value;
                     OnModeChanged();
-                    RaisePropertyChanged(ModePropertyName);
+                    RaisePropertyChanged();
                 }
             }
         }
 
-        IObservableVector<NavCategoryGroup> Categories
+        public ObservableCollection<NavCategoryGroup> Categories
         {
             set
             {
@@ -110,7 +113,7 @@ namespace CalculatorApp
             }
             catch (Exception e)
             {
-                // // // TraceLogger.GetInstance().LogPlatformException(__FUNCTIONW__, e);
+                // TraceLogger.GetInstance().LogPlatformException(__FUNCTIONW__, e);
                 if (!TryRecoverFromNavigationModeFailure())
                 {
                     // Could not navigate to standard mode either.
@@ -139,11 +142,11 @@ namespace CalculatorApp
         void OnModeChanged()
         {
             Debug.Assert(NavCategory.IsValidViewMode(m_mode));
-            // // // TraceLogger.GetInstance().LogModeChangeBegin(m_PreviousMode, m_mode, ApplicationView.GetApplicationViewIdForWindow(CoreWindow.GetForCurrentThread()));
+            // TraceLogger.GetInstance().LogModeChangeBegin(m_PreviousMode, m_mode, ApplicationView.GetApplicationViewIdForWindow(CoreWindow.GetForCurrentThread()));
             if (NavCategory.IsCalculatorViewMode(m_mode))
             {
-                // // // TraceLogger.GetInstance().LogCalculatorModeViewed(m_mode, ApplicationView.GetApplicationViewIdForWindow(CoreWindow.GetForCurrentThread()));
-                if (!m_CalculatorViewModel)
+                // TraceLogger.GetInstance().LogCalculatorModeViewed(m_mode, ApplicationView.GetApplicationViewIdForWindow(CoreWindow.GetForCurrentThread()));
+                if (m_CalculatorViewModel == null)
                 {
                     m_CalculatorViewModel = new StandardCalculatorViewModel();
                 }
@@ -151,23 +154,25 @@ namespace CalculatorApp
             }
             else if (NavCategory.IsDateCalculatorViewMode(m_mode))
             {
-                // // // TraceLogger.GetInstance().LogDateCalculatorModeViewed(m_mode, ApplicationView.GetApplicationViewIdForWindow(CoreWindow.GetForCurrentThread()));
-                if (!m_DateCalcViewModel)
-                {
-                    m_DateCalcViewModel = new DateCalculatorViewModel();
-                }
+                // TraceLogger.GetInstance().LogDateCalculatorModeViewed(m_mode, ApplicationView.GetApplicationViewIdForWindow(CoreWindow.GetForCurrentThread()));
+                // UNO TODO
+                //if (m_DateCalcViewModel == null)
+                //{
+                //    m_DateCalcViewModel = new DateCalculatorViewModel();
+                //}
             }
             else if (NavCategory.IsConverterViewMode(m_mode))
             {
-                // // // TraceLogger.GetInstance().LogConverterModeViewed(m_mode, ApplicationView.GetApplicationViewIdForWindow(CoreWindow.GetForCurrentThread()));
-                if (!m_ConverterViewModel)
-                {
-                    var dataLoader = new UnitConverterDataLoader(new GeographicRegion());
-                    var currencyDataLoader = new CurrencyDataLoader(new CurrencyHttpClient());
-                    m_ConverterViewModel = new UnitConverterViewModel(new UnitConversionManager.UnitConverter(dataLoader, currencyDataLoader));
-                }
+                // UNO TODO
+                //// TraceLogger.GetInstance().LogConverterModeViewed(m_mode, ApplicationView.GetApplicationViewIdForWindow(CoreWindow.GetForCurrentThread()));
+                //if (!m_ConverterViewModel)
+                //{
+                //    var dataLoader = new UnitConverterDataLoader(new GeographicRegion());
+                //    var currencyDataLoader = new CurrencyDataLoader(new CurrencyHttpClient());
+                //    m_ConverterViewModel = new UnitConverterViewModel(new UnitConversionManager.UnitConverter(dataLoader, currencyDataLoader));
+                //}
 
-                m_ConverterViewModel.Mode = m_mode;
+                //m_ConverterViewModel.Mode = m_mode;
             }
 
             var resProvider = AppResourceProvider.GetInstance();
@@ -177,23 +182,24 @@ namespace CalculatorApp
             //
             // Save the changed mode, so that the new window launches in this mode.
             // Don't save until after we have adjusted to the new mode, so we don't save a mode that fails to load.
-            ApplicationData.Current.LocalSettings.Values.Insert(ModePropertyName, NavCategory.Serialize(m_mode));
+            ApplicationData.Current.LocalSettings.Values.Add(nameof(Mode), NavCategory.Serialize(m_mode));
 
-            // // // TraceLogger.GetInstance().LogModeChangeEnd(m_mode, ApplicationView.GetApplicationViewIdForWindow(CoreWindow.GetForCurrentThread()));
+            // TraceLogger.GetInstance().LogModeChangeEnd(m_mode, ApplicationView.GetApplicationViewIdForWindow(CoreWindow.GetForCurrentThread()));
             RaisePropertyChanged(ClearMemoryVisibilityPropertyName);
         }
 
         void OnCopyCommand(object parameter)
         {
-            if (NavCategory.IsConverterViewMode(m_mode))
-            {
-                ConverterViewModel.OnCopyCommand(parameter);
-            }
-            else if (NavCategory.IsDateCalculatorViewMode(m_mode))
-            {
-                DateCalcViewModel.OnCopyCommand(parameter);
-            }
-            else
+            // UNO TODO
+            //if (NavCategory.IsConverterViewMode(m_mode))
+            //{
+            //    ConverterViewModel.OnCopyCommand(parameter);
+            //}
+            //else if (NavCategory.IsDateCalculatorViewMode(m_mode))
+            //{
+            //    DateCalcViewModel.OnCopyCommand(parameter);
+            //}
+            //else
             {
                 CalculatorViewModel.OnCopyCommand(parameter);
             }
@@ -201,11 +207,13 @@ namespace CalculatorApp
 
         void OnPasteCommand(object parameter)
         {
-            if (NavCategory.IsConverterViewMode(m_mode))
-            {
-                ConverterViewModel.OnPasteCommand(parameter);
-            }
-            else if (NavCategory.IsCalculatorViewMode(m_mode))
+            // UNO TODO
+            //if (NavCategory.IsConverterViewMode(m_mode))
+            //{
+            //    ConverterViewModel.OnPasteCommand(parameter);
+            //}
+            //else 
+            if (NavCategory.IsCalculatorViewMode(m_mode))
             {
                 CalculatorViewModel.OnPasteCommand(parameter);
             }

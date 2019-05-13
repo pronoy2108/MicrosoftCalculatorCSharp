@@ -218,8 +218,8 @@ namespace CalculatorApp.ViewModel
         public CalculatorApp.Common.Automation.NarratorAnnouncement Announcement { get => m_Announcement; set { m_Announcement = value; RaisePropertyChanged("Announcement"); } }
 
 
-        private uint m_OpenParenthesisCount;
-        public uint OpenParenthesisCount { get => m_OpenParenthesisCount; private set { m_OpenParenthesisCount = value; RaisePropertyChanged("OpenParenthesisCount"); } }
+        private int m_OpenParenthesisCount;
+        public int OpenParenthesisCount { get => m_OpenParenthesisCount; private set { m_OpenParenthesisCount = value; RaisePropertyChanged("OpenParenthesisCount"); } }
 
         public ICommand CopyCommand { get; }
 
@@ -674,7 +674,7 @@ namespace CalculatorApp.ViewModel
             m_standardCalculatorManager.DisplayPasteError();
         }
 
-        public void SetParenthesisCount(uint parenthesisCount)
+        public void SetParenthesisCount(int parenthesisCount)
         {
             if (m_OpenParenthesisCount == parenthesisCount)
             {
@@ -1169,7 +1169,7 @@ namespace CalculatorApp.ViewModel
             }
         }
 
-        void OnCopyCommand(object parameter)
+        public void OnCopyCommand(object parameter)
         {
             CopyPasteManager.CopyToClipboard(GetRawDisplayValue());
 
@@ -1177,7 +1177,7 @@ namespace CalculatorApp.ViewModel
             Announcement = CalculatorAnnouncement.GetDisplayCopiedAnnouncement(announcement);
         }
 
-        void OnPasteCommand(object parameter)
+        public void OnPasteCommand(object parameter)
         {
             ViewMode mode;
             int NumberBase = -1;
@@ -1744,7 +1744,7 @@ namespace CalculatorApp.ViewModel
             }
         }
 
-        void SetCalculatorType(ViewMode targetState)
+        public void SetCalculatorType(ViewMode targetState)
         {
             // Reset error state so that commands caused by the mode change are still
             // sent if calc is currently in error state.

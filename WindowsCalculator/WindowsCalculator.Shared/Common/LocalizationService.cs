@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using Windows.ApplicationModel.Resources.Core;
 using Windows.Globalization;
 using Windows.Globalization.DateTimeFormatting;
@@ -29,10 +30,22 @@ namespace CalculatorApp.Common
     {
         static string DefaultCurrencyCode = "USD";
 
-        DEPENDENCY_PROPERTY_OWNER(LocalizationService);
 
-        DEPENDENCY_PROPERTY_ATTACHED_WITH_DEFAULT_AND_CALLBACK(LanguageFontType, FontType, LanguageFontType.UIText);
-        DEPENDENCY_PROPERTY_ATTACHED_WITH_CALLBACK(double, FontSize);
+
+        public static LanguageFontType GetFontType(DependencyObject obj) => (LanguageFontType)obj.GetValue(FontTypeProperty);
+
+        public static void SetFontType(DependencyObject obj, LanguageFontType value) => obj.SetValue(FontTypeProperty, value);
+
+        public static readonly DependencyProperty FontTypeProperty =
+            DependencyProperty.RegisterAttached("FontType", typeof(LanguageFontType), typeof(LocalizationService), new PropertyMetadata(LanguageFontType.UIText));
+
+
+        public static double GetFontSize(DependencyObject obj) => (double)obj.GetValue(FontSizeProperty);
+
+        public static void SetFontSize(DependencyObject obj, double value) => obj.SetValue(FontSizeProperty, value);
+
+        public static readonly DependencyProperty FontSizeProperty =
+            DependencyProperty.RegisterAttached("FontSize", typeof(double), typeof(LocalizationService), new PropertyMetadata(0));
 
         static LocalizationService s_singletonInstance;
 
@@ -55,9 +68,6 @@ namespace CalculatorApp.Common
         {
             if (s_singletonInstance == null)
             {
-                // Writer lock for the static maps
-                reader_writer_lock.scoped_lock lock(s_locServiceInstanceLock);
-
                 if (s_singletonInstance == null)
                 {
                     s_singletonInstance =  new LocalizationService();
@@ -71,7 +81,7 @@ namespace CalculatorApp.Common
         {
             m_language = ApplicationLanguages.Languages[0];
             m_flowDirection =
-                ResourceContext.GetForCurrentView().QualifierValues.Lookup("LayoutDirection") != "LTR" ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+                ResourceContext.GetForCurrentView().QualifierValues["LayoutDirection"] != "LTR" ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
 
             var resourceLoader = AppResourceProvider.GetInstance();
             m_fontFamilyOverride = resourceLoader.GetResourceString("LocalizedFontFamilyOverride");
@@ -91,8 +101,8 @@ namespace CalculatorApp.Common
                 Debug.Assert(localizedUICaptionFontSizeFactorOverride != reserved);
 
                 m_fontWeightOverride = ParseFontWeight(localizedFontWeightOverride);
-                m_uiTextFontScaleFactorOverride = localizedUITextFontSizeFactorOverride;
-                m_uiCaptionFontScaleFactorOverride = localizedUICaptionFontSizeFactorOverride;
+                m_uiTextFontScaleFactorOverride = double.Parse(localizedUITextFontSizeFactorOverride);
+                m_uiCaptionFontScaleFactorOverride = double.Parse(localizedUICaptionFontSizeFactorOverride);
             }
 
             m_fontGroup =  new LanguageFontGroup(m_language);
@@ -245,7 +255,7 @@ namespace CalculatorApp.Common
         void UpdateFontFamilyAndSize(DependencyObject target)
         {
             FontFamily fontFamily;
-            FontWeight fontWeight;
+            FontWeight fontWeight = FontWeights.Normal;
             bool fOverrideFontWeight = false;
             double scaleFactor;
 
@@ -269,7 +279,7 @@ namespace CalculatorApp.Common
             double sizeToUse = GetFontSize(target) * scaleFactor;
 
             var control = target as Control;
-            if (control)
+            if (control != null)
             {
                 control.FontFamily = fontFamily;
                 if (fOverrideFontWeight)
@@ -351,10 +361,10 @@ namespace CalculatorApp.Common
         // as configured by running intl.cpl.
         public static DecimalFormatter GetRegionalSettingsAwareDecimalFormatter()
         {
-            IIterable<String> languageIdentifiers = GetLanguageIdentifiers();
+            IEnumerable<String> languageIdentifiers = GetLanguageIdentifiers();
             if (languageIdentifiers != null)
             {
-                return  new DecimalFormatter(languageIdentifiers, GlobalizationPerences.HomeGeographicRegion);
+                return  new DecimalFormatter(languageIdentifiers, GlobalizationPreferences.HomeGeographicRegion);
             }
 
             return  new DecimalFormatter();
@@ -366,7 +376,7 @@ namespace CalculatorApp.Common
         // This helper function creates a DateTimeFormatter with a TwentyFour hour clock
         DateTimeFormatter GetRegionalSettingsAwareDateTimeFormatter( string format)
         {
-            IIterable<String> languageIdentifiers = GetLanguageIdentifiers();
+            IEnumerable<String> languageIdentifiers = GetLanguageIdentifiers();
             if (languageIdentifiers == null)
             {
                 languageIdentifiers = ApplicationLanguages.Languages;
@@ -377,65 +387,73 @@ namespace CalculatorApp.Common
 
         // If successful, returns a formatter that respects the user's regional format settings,
         // as configured by running intl.cpl.
-        DateTimeFormatter
-            GetRegionalSettingsAwareDateTimeFormatter( string format,  string calendarIdentifier,  string clockIdentifier)
+        DateTimeFormatter GetRegionalSettingsAwareDateTimeFormatter( string format,  string calendarIdentifier,  string clockIdentifier)
         {
-            IIterable<String> languageIdentifiers = GetLanguageIdentifiers();
-            if (languageIdentifiers == null)
-            {
-                languageIdentifiers = ApplicationLanguages.Languages;
-            }
+            // UNO TODO
+            //IIterable<String> languageIdentifiers = GetLanguageIdentifiers();
+            //if (languageIdentifiers == null)
+            //{
+            //    languageIdentifiers = ApplicationLanguages.Languages;
+            //}
 
-            return  new DateTimeFormatter(format, languageIdentifiers, GlobalizationPerences.HomeGeographicRegion, calendarIdentifier, clockIdentifier);
+            //return  new DateTimeFormatter(format, languageIdentifiers, GlobalizationPerences.HomeGeographicRegion, calendarIdentifier, clockIdentifier);
+
+            throw new NotImplementedException();
         }
 
-        CurrencyFormatter GetRegionalSettingsAwareCurrencyFormatter()
+        public CurrencyFormatter GetRegionalSettingsAwareCurrencyFormatter()
         {
-            string userCurrency =
-                (GlobalizationPreferences.Currencies.Size > 0) ? GlobalizationPreferences.Currencies.GetAt(0) : string(DefaultCurrencyCode.data());
+            // UNO TODO
+            //string userCurrency =
+            //    (GlobalizationPreferences.Currencies.Size > 0) ? GlobalizationPreferences.Currencies.GetAt(0) : string(DefaultCurrencyCode.data());
 
-            IIterable<String> languageIdentifiers = GetLanguageIdentifiers();
-            if (languageIdentifiers == null)
-            {
-                languageIdentifiers = ApplicationLanguages.Languages;
-            }
+            //IIterable<String> languageIdentifiers = GetLanguageIdentifiers();
+            //if (languageIdentifiers == null)
+            //{
+            //    languageIdentifiers = ApplicationLanguages.Languages;
+            //}
 
-            var currencyFormatter =  new CurrencyFormatter(userCurrency, languageIdentifiers, GlobalizationPerences.HomeGeographicRegion);
+            //var currencyFormatter =  new CurrencyFormatter(userCurrency, languageIdentifiers, GlobalizationPerences.HomeGeographicRegion);
 
-            int fractionDigits = LocalizationSettings.GetInstance().GetCurrencyTrailingDigits();
-            currencyFormatter.FractionDigits = fractionDigits;
+            //int fractionDigits = LocalizationSettings.GetInstance().GetCurrencyTrailingDigits();
+            //currencyFormatter.FractionDigits = fractionDigits;
 
-            return currencyFormatter;
+            //return currencyFormatter;
+
+            throw new NotImplementedException();
         }
 
-        IEnumerable<String> GetLanguageIdentifiers()
+        static IEnumerable<String> GetLanguageIdentifiers()
         {
-            char currentLocale[LOCALE_NAME_MAX_LENGTH] = {};
-            int result = GetUserDefaultLocaleName(currentLocale, LOCALE_NAME_MAX_LENGTH);
-            if (result != 0)
-            {
-                // GetUserDefaultLocaleName may return an invalid bcp47 language tag with trailing non-BCP47 friendly characters,
-                // which if present would start with an underscore, for example sort order
-                // (see https://msdn.microsoft.com/en-us/library/windows/desktop/dd373814(v=vs.85).aspx).
-                // Therefore, if there is an underscore in the locale name, trim all characters from the underscore onwards.
-                WCHAR* underscore = wcschr(currentLocale, '_');
-                if (underscore != null)
-                {
-                    *underscore = '\0';
-                }
+            // UNO TODO
+            //char currentLocale[LOCALE_NAME_MAX_LENGTH] = {};
+            //int result = GetUserDefaultLocaleName(currentLocale, LOCALE_NAME_MAX_LENGTH);
+            //if (result != 0)
+            //{
+            //    // GetUserDefaultLocaleName may return an invalid bcp47 language tag with trailing non-BCP47 friendly characters,
+            //    // which if present would start with an underscore, for example sort order
+            //    // (see https://msdn.microsoft.com/en-us/library/windows/desktop/dd373814(v=vs.85).aspx).
+            //    // Therefore, if there is an underscore in the locale name, trim all characters from the underscore onwards.
+            //    WCHAR* underscore = wcschr(currentLocale, '_');
+            //    if (underscore != null)
+            //    {
+            //        *underscore = '\0';
+            //    }
 
-                string localestring =  new String(currentLocale);
-                // validate if the locale we have is valid
-                // otherwise we fallback to the default.
-                if (Language.IsWellFormed(localeString))
-                {
-                    var languageList =  new Vector<String>();
-                    languageList.Append(localeString);
-                    return languageList;
-                }
-            }
+            //    string localestring =  new String(currentLocale);
+            //    // validate if the locale we have is valid
+            //    // otherwise we fallback to the default.
+            //    if (Language.IsWellFormed(localeString))
+            //    {
+            //        var languageList =  new Vector<String>();
+            //        languageList.Append(localeString);
+            //        return languageList;
+            //    }
+            //}
 
-            return null;
+            //return null;
+
+            yield break;
         }
 
         // Resources for the engine use numbers as keys. It's inconvenient, but also difficult to
@@ -499,7 +517,10 @@ namespace CalculatorApp.Common
                 string engineStr = resProvider.GetCEngineString(keyPair.Item1);
                 string automationName = resProvider.GetResourceString(keyPair.Item2);
 
-                tokenToReadableNameMap.emplace(engineStr + openParen, automationName);
+                if (!tokenToReadableNameMap.ContainsKey(engineStr + openParen))
+                {
+                    tokenToReadableNameMap.Add(engineStr + openParen, automationName);
+                }
             }
             // s_parenEngineKeyResourceMap.clear();
 
@@ -516,7 +537,7 @@ namespace CalculatorApp.Common
             // s_noParenEngineKeyResourceMap.clear();
 
             // Also replace hyphens with "minus"
-            string minusText = resProvider.GetResourceString("minus";
+            string minusText = resProvider.GetResourceString("minus");
 
             if (!tokenToReadableNameMap.ContainsKey("-"))
             {
@@ -528,33 +549,31 @@ namespace CalculatorApp.Common
 
         static Dictionary<string, string> s_tokenToReadableNameMap = GetTokenToReadableNameMap();
 
+        static readonly string openParen = AppResourceProvider.GetInstance().GetCEngineString(s_openParenResourceKey);
+
         public static string GetNarratorReadableToken(string rawToken)
         {
-
-            var itr = s_tokenToReadableNameMap.find(rawToken.Data());
-            if (itr == s_tokenToReadableNameMap.end())
+            if(s_tokenToReadableNameMap.TryGetValue(rawToken, out var itr))
             {
-                return rawToken;
+                return itr + " " + openParen;
             }
             else
             {
-                static const string openParen = AppResourceProvider.GetInstance().GetCEngineString(string(s_openParenResourceKey));
-                return  new String(itr.second.c_str()) + " " + openParen;
+                return rawToken;
             }
         }
 
-        string GetNarratorReadableString(string rawString)
+        public static string GetNarratorReadableString(string rawString)
         {
-            wstringstream readableString{};
-            readablestring << "";
+            StringBuilder readableString = new StringBuilder();
 
-            string asWstring = rawString.Data();
-            for (const auto& c : asWstring)
+            string asWstring = rawString;
+            foreach (var c in asWstring)
             {
-                readablestring << GetNarratorReadableToken("" + c).Data();
+                readableString.Append(GetNarratorReadableToken("" + c));
             }
 
-            return  new String(readableString.str().c_str());
+            return readableString.ToString();
         }
     };
 

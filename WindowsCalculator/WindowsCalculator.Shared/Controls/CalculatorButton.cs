@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CalculatorApp.Common;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Windows.System;
@@ -8,7 +9,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
-namespace WindowsCalculator.Shared.Controls
+namespace CalculatorApp
 {
 	class CalculatorButton : Button
 	{
@@ -22,24 +23,24 @@ namespace WindowsCalculator.Shared.Controls
 		}
 
 		// ButtonId
-		public int ButtonId
+		public NumbersAndOperatorsEnum ButtonId
 		{
-			get { return (int)GetValue(ButtonIdProperty); }
+			get { return (NumbersAndOperatorsEnum)GetValue(ButtonIdProperty); }
 			set { SetValue(ButtonIdProperty, value); }
 		}
 
 		public static readonly DependencyProperty ButtonIdProperty =
-			DependencyProperty.Register("ButtonId", typeof(int), typeof(CalculatorButton), new PropertyMetadata(null));
+			DependencyProperty.Register("ButtonId", typeof(NumbersAndOperatorsEnum), typeof(CalculatorButton), new PropertyMetadata(null));
 
 		// AuditoryFeedback
-		public int AuditoryFeedback
+		public string AuditoryFeedback
 		{
-			get { return (int)GetValue(AuditoryFeedbackProperty); }
+			get { return (string)GetValue(AuditoryFeedbackProperty); }
 			set { SetValue(AuditoryFeedbackProperty, value); }
 		}
 
 		public static readonly DependencyProperty AuditoryFeedbackProperty =
-			DependencyProperty.Register("AuditoryFeedback", typeof(int), typeof(CalculatorButton), new PropertyMetadata(null));
+			DependencyProperty.Register("AuditoryFeedback", typeof(string), typeof(CalculatorButton), new PropertyMetadata(null));
 
 		// HoverBackground
 		public Brush HoverBackground
@@ -83,7 +84,7 @@ namespace WindowsCalculator.Shared.Controls
 
 		// PROTECTED 
 
-		override virtual void OnKeyDown(KeyRoutedEventArgs e)
+		protected override void OnKeyDown(KeyRoutedEventArgs e)
 		{
 			// Ignore the Enter key
 			if (e.Key == VirtualKey.Enter)
@@ -91,10 +92,10 @@ namespace WindowsCalculator.Shared.Controls
 				return;
 			}
 
-			Button.OnKeyDown(e);
+			base.OnKeyDown(e);
 		}
 
-		override virtual void OnKeyUp(KeyRoutedEventArgs e)
+        protected override void OnKeyUp(KeyRoutedEventArgs e)
 		{
 			// Ignore the Enter key
 			if (e.Key == VirtualKey.Enter)
@@ -102,12 +103,12 @@ namespace WindowsCalculator.Shared.Controls
 				return;
 			}
 
-			Button.OnKeyUp(e);
+            base.OnKeyUp(e);
 		}
 
 		// PRIVATE
 
-		private void OnButtonIdPropertyChanged(int oldValue, int newValue)
+		private void OnButtonIdPropertyChanged(NumbersAndOperatorsEnum oldValue, NumbersAndOperatorsEnum newValue)
 		{
 			this.CommandParameter = new CalculatorButtonPressedEventArgs(AuditoryFeedback, newValue);
 		}

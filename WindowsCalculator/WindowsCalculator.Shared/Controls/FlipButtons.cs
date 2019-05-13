@@ -4,11 +4,12 @@ using System.Text;
 using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
-namespace WindowsCalculator.Shared.Controls
+namespace CalculatorApp
 {
 	class FlipButtons : ToggleButton
 	{
@@ -64,7 +65,7 @@ namespace WindowsCalculator.Shared.Controls
 			DependencyProperty.Register("PressForeground", typeof(Brush), typeof(CalculatorButton), new PropertyMetadata(null));
 
 		// PROTECTED 
-		override protected virtual void OnKeyDown(KeyRoutedEventArgs e)
+		override protected void OnKeyDown(KeyRoutedEventArgs e)
 		{
 			// Ignore the Enter key
 			if (e.Key == VirtualKey.Enter)
@@ -72,10 +73,10 @@ namespace WindowsCalculator.Shared.Controls
 				return;
 			}
 
-			ToggleButton.OnKeyDown(e);
+			base.OnKeyDown(e);
 		}
 
-		override protected virtual void OnKeyUp(KeyRoutedEventArgs e)
+		override protected void OnKeyUp(KeyRoutedEventArgs e)
 		{
 			// Ignore the Enter key
 			if (e.Key == VirtualKey.Enter)
@@ -83,7 +84,7 @@ namespace WindowsCalculator.Shared.Controls
 				return;
 			}
 
-			ToggleButton.OnKeyUp(e);
+            base.OnKeyUp(e);
 		}
 
 		// PRIVATE

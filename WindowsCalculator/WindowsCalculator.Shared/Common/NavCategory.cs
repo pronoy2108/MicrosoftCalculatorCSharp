@@ -351,7 +351,7 @@ namespace CalculatorApp
                                                                                                         POSITIVE_ONLY ) };
 
             // This function should only be used when storing the mode to app data.
-            int Serialize(ViewMode mode)
+            public static  int Serialize(ViewMode mode)
             {
                 var iter = s_categoryManifest.FirstOrDefault(c => c.Value.viewMode == mode);
 
@@ -378,31 +378,31 @@ namespace CalculatorApp
                 return ViewMode.None;
             }
 
-            bool IsValidViewMode(ViewMode mode)
+            public static bool IsValidViewMode(ViewMode mode)
             {
                 var iter = s_categoryManifest.FirstOrDefault(c => c.Value.viewMode == mode);
 
                 return iter != null;
             }
 
-            bool IsCalculatorViewMode(ViewMode mode)
+            public static bool IsCalculatorViewMode(ViewMode mode)
             {
                 // Historically, Date Calculator is not a Calculator mode
                 // even though it is in the Calculator category.
                 return !IsDateCalculatorViewMode(mode) && IsModeInCategoryGroup(mode, CategoryGroupType.Calculator);
             }
 
-            bool IsDateCalculatorViewMode(ViewMode mode)
+            public static bool IsDateCalculatorViewMode(ViewMode mode)
             {
                 return mode == ViewMode.Date;
             }
 
-            bool IsConverterViewMode(ViewMode mode)
+            public static bool IsConverterViewMode(ViewMode mode)
             {
                 return IsModeInCategoryGroup(mode, CategoryGroupType.Converter);
             }
 
-            bool IsModeInCategoryGroup(ViewMode mode, CategoryGroupType type)
+            public static bool IsModeInCategoryGroup(ViewMode mode, CategoryGroupType type)
             {
                 var iter = s_categoryManifest.FirstOrDefault(c => c.Value.viewMode == mode && c.Value.groupType == type);
 
@@ -423,7 +423,7 @@ namespace CalculatorApp
                 return (iter != null) ? iter.Value.viewMode : ViewMode.None;
             }
 
-            string GetNameResourceKey(ViewMode mode)
+            public static string GetNameResourceKey(ViewMode mode)
             {
                 var iter = s_categoryManifest.FirstOrDefault(c => c.Value.viewMode == mode);
 
@@ -574,7 +574,7 @@ namespace CalculatorApp
                 }
             }
 
-            ObservableCollection<NavCategoryGroup> CreateMenuOptions()
+            public static ObservableCollection<NavCategoryGroup> CreateMenuOptions()
             {
                 var menuOptions =  new ObservableCollection<NavCategoryGroup>();
                 menuOptions.Add(CreateCalculatorCategory());

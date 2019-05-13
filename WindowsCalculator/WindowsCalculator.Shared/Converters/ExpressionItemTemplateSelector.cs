@@ -1,42 +1,60 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Uno.UI.Converters;
-using Windows.UI.Xaml;
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
-namespace WindowsCalculator.Shared.Converters
+using CalculatorApp.Common;
+using System;
+
+namespace CalculatorApp
 {
-	class ExpressionItemTemplateSelector : ConverterBase
-	{
-		Style ExpressionItemContainerStyle.SelectStyleCore(Object item, DependencyObject container)
+    namespace Converters
+    {
+        [Windows.UI.Xaml.Data.Bindable]
+        public sealed class ExpressionItemTemplateSelector : Windows.UI.Xaml.Controls.DataTemplateSelector
         {
-            DisplayExpressionToken token = dynamic_cast<DisplayExpressionToken>(item);
-
-            if (token != nullptr)
+            Windows.UI.Xaml.DataTemplate SelectTemplateCore(object item, Windows.UI.Xaml.DependencyObject container)
             {
-                Common.TokenType type = token.Type;
-
-                switch (type)
+                DisplayExpressionToken token = (DisplayExpressionToken)(item);
+                if (token != null)
                 {
-                case TokenType.Operator:
-                    if (token.IsTokenEditable)
+                    Common.TokenType type = token.Type;
+
+                    switch (type)
                     {
-                        return m_editableOperatorStyle;
+                        case TokenType.Operator:
+                            return m_operatorTemplate;
+                        case TokenType.Operand:
+                            return m_operandTemplate;
+                        case TokenType.Separator:
+                            return m_separatorTemplate;
+                        default:
+                            throw new Exception("Invalid token type");
                     }
-                    else
-                    {
-                        return m_nonEditableOperatorStyle;
-                    }
-                case TokenType.Operand:
-                    return m_operandStyle;
-                case TokenType.Separator:
-                    return m_separatorStyle;
-                default:
-                    throw new Platform.Exception(E_FAIL, "Invalid token type");
                 }
+
+                return m_separatorTemplate;
             }
 
-            return m_separatorStyle;
-        }
-	}
+            public Windows.UI.Xaml.DataTemplate OperatorTemplate
+            {
+                get => m_operatorTemplate;
+                set => m_operatorTemplate = value;
+            }
+
+            public Windows.UI.Xaml.DataTemplate OperandTemplate
+            {
+                get => m_operandTemplate;
+                set => m_operandTemplate = value;
+            }
+
+            public Windows.UI.Xaml.DataTemplate SeparatorTemplate
+            {
+                get => m_separatorTemplate;
+                set => m_separatorTemplate = value;
+            }
+
+            private Windows.UI.Xaml.DataTemplate m_operatorTemplate;
+            private Windows.UI.Xaml.DataTemplate m_operandTemplate;
+            private Windows.UI.Xaml.DataTemplate m_separatorTemplate;
+        };
+    }
 }

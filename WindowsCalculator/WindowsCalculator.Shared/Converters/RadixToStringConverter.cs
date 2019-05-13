@@ -5,16 +5,18 @@ using Uno.UI.Converters;
 using Windows.UI.Xaml.Interop;
 using Windows.Foundation.Metadata;
 using Windows.UI.Xaml.Data;
+using CalculationManager;
+using CalculatorApp;
 
 namespace WindowsCalculator.Shared.Converters
 {
 	[WebHostHidden]
 	class RadixToStringConverter : IValueConverter
 	{
-		public virtual Object Convert(Object value, TypeName targetType, Object parameter, String language)
+		public object Convert(Object value, Type targetType, Object parameter, String language)
 		{
-			var boxedInt = (int)value;
-			string convertedValue;
+			var boxedInt = (RADIX_TYPE)(int)value;
+			string convertedValue = "";
 			var resourceLoader = AppResourceProvider.GetInstance();
 
 			switch (boxedInt)
@@ -39,7 +41,7 @@ namespace WindowsCalculator.Shared.Converters
 			return convertedValue;
 		}
 
-		public virtual Object ConvertBack(Object value, TypeName targetType, Object parameter, String language)
+		public virtual object ConvertBack(Object value, Type targetType, Object parameter, String language)
 		{
 			throw new NotImplementedException();
 		}

@@ -9,6 +9,8 @@ namespace CalculatorApp
     using System.ComponentModel;
     using System.Diagnostics;
     using System.Linq;
+    using System.Windows.Input;
+    using Uno.UI.Common;
     using Windows.Storage;
     using CM = CalculationManager;
 
@@ -40,11 +42,9 @@ namespace CalculatorApp
             public CalculatorApp.Common.Automation.NarratorAnnouncement HistoryAnnouncement { get => m_HistoryAnnouncement; set { m_HistoryAnnouncement = value; RaisePropertyChanged("HistoryAnnouncement"); } }
 
 
-            public ICommand HideCommand { get; } = new DelegateCommand(OnHideCommand);
+            public ICommand HideCommand { get; }
 
-
-            public ICommand ClearCommand { get; } = new DelegateCommand(OnClearCommand);
-
+            public ICommand ClearCommand { get; }
 
             // events that are created
             event HideHistoryClickedHandler HideHistoryClicked;
@@ -61,8 +61,11 @@ namespace CalculatorApp
             const string HistoryCleared = "HistoryList_Cleared";
 
             public HistoryViewModel(CalculationManager.CalculatorManager calculatorManager)
-            {
-                m_calculatorManager = calculatorManager;
+            { 
+                HideCommand = new DelegateCommand<object>(OnHideCommand);
+                ClearCommand  = new DelegateCommand<object>(OnClearCommand);
+
+            m_calculatorManager = calculatorManager;
                 m_localizedHistoryCleared = null;
 
                 AreHistoryShortcutsEnabled = true;
@@ -118,7 +121,7 @@ namespace CalculatorApp
                 UpdateItemSize();
             }
 
-            public void OnHistoryItemAdded(uint addedItemIndex)
+            public void OnHistoryItemAdded(int addedItemIndex)
             {
                 var newItem = m_calculatorManager.GetHistoryItem(addedItemIndex);
                 var localizer = LocalizationSettings.GetInstance();
@@ -196,7 +199,7 @@ namespace CalculatorApp
                         UpdateItemSize();
                     }
 
-                    MakeHistoryClearedNarratorAnnouncement(HistoryResourceKeys.HistoryCleared, m_localizedHistoryCleared);
+                    MakeHistoryClearedNarratorAnnouncement(HistoryCleared, m_localizedHistoryCleared);
                 }
             }
 
@@ -216,8 +219,7 @@ namespace CalculatorApp
                         {
                             // deserialize each item
                             var item = DeserializeHistoryItem(i.ToString(), historyContainer);
-                            CalculationManager.HISTORYITEM Item = new CalculationManager.HISTORYITEM(item);
-                            historyVector.push_back(Item);
+                            historyVector.Add(item);
                         }
                         catch (Exception e)
                         {

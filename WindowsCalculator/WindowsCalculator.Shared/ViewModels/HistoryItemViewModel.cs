@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using CalculationManager;
+using CalculatorApp.Common;
 using System;
 using System.Text;
 using Windows.UI.Xaml.Data;

@@ -12,7 +12,7 @@ namespace WindowsCalculator.Shared.Converters
 	[WebHostHidden]
 	public sealed class VisibilityNegationConverter : IValueConverter
 	{
-		protected override object Convert(object value, Type targetType, object parameter)
+		public object Convert(object value, Type targetType, object parameter, String language)
 		{
 			var boxedVisibility = (Visibility)value;
 			Visibility visibility = Visibility.Collapsed;
@@ -25,7 +25,7 @@ namespace WindowsCalculator.Shared.Converters
 			return visibility;
 		}
 
-		protected override object ConvertBack(Object value, TypeName targetType, Object parameter, String language)
+		public object ConvertBack(Object value, Type targetType, Object parameter, String language)
 		{
 			return Convert(value, targetType, parameter, language);
 		}

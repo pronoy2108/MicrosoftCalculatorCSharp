@@ -30,7 +30,7 @@ namespace CalculationManager
         MemorizedNumberClear = 335
     };
 
-    struct HISTORYITEMVECTOR
+    public struct HISTORYITEMVECTOR
     {
         public CalculatorList<(string, int)> spTokens;
         public CalculatorList<IExpressionCommand> spCommands;
@@ -38,7 +38,7 @@ namespace CalculationManager
         public string result;
     };
 
-    struct HISTORYITEM
+    public struct HISTORYITEM
     {
         public HISTORYITEMVECTOR historyItemVector;
     };
@@ -60,7 +60,7 @@ namespace CalculationManager
     }
 
 
-    class CalculatorManager : ICalcDisplay
+    public class CalculatorManager : ICalcDisplay
     {
         public void SetPrimaryDisplay(string displayString, bool isError) => throw new NotImplementedException();
         public void SetIsInError(bool isError) => throw new NotImplementedException();

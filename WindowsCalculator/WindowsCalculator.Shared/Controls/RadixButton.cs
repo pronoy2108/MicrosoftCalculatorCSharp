@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CalculatorApp.Common;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Windows.System;
@@ -19,9 +20,9 @@ namespace WindowsCalculator.Shared.Controls
 
 		internal string GetRawDisplayValue()
 		{
-			string rawValue;
+			string rawValue = null;
 			string radixContent = Content.ToString();
-			LocalizationSettings.GetInstance().RemoveGroupSeparators(radixContent.Data, radixContent.Length, rawValue);
+			LocalizationSettings.GetInstance().RemoveGroupSeparators(radixContent, radixContent.Length, out rawValue);
 
 			return rawValue;
 		}
