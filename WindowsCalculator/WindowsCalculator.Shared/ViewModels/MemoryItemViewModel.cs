@@ -1,35 +1,21 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using CalculatorApp;
-using CalculatorApp.Common;
-using CalculatorApp.Common.Automation;
-using CalculatorApp.ViewModel;
-using Platform;
-using std;
-using Windows.Foundation;
-using Windows.Storage;
-using Windows.Storage.Streams;
-using Windows.Security.Cryptography;
-using Windows.Foundation.Collections;
+using System;
 using System.ComponentModel;
 using Windows.UI.Xaml.Data;
-using System;
 
 namespace CalculatorApp
 {
     namespace ViewModel
     {
-
-
-
         /// <summary>
         /// Model representation of a single item in the Memory list
         /// </summary>
         [Windows.UI.Xaml.Data.Bindable]
-        public class MemoryItemViewModel : INotifyPropertyChanged, ICustomPropertyProvider
+        public sealed class MemoryItemViewModel : INotifyPropertyChanged, Windows.UI.Xaml.Data.ICustomPropertyProvider
         {
-            StandardCalculatorViewModel m_calcVM;
+            private StandardCalculatorViewModel m_calcVM;
 
             public MemoryItemViewModel(StandardCalculatorViewModel calcVM)
             {
@@ -38,7 +24,6 @@ namespace CalculatorApp
             }
 
             public event PropertyChangedEventHandler PropertyChanged;
-
             private void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName]string p = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(p));
             private int m_Position;
             public int Position { get => m_Position; set { m_Position = value; RaisePropertyChanged("Position"); } }
@@ -46,25 +31,35 @@ namespace CalculatorApp
             private string m_Value;
             public string Value { get => m_Value; set { m_Value = value; RaisePropertyChanged("Value"); } }
 
-            public Type Type => GetType();
-            public ICustomProperty GetCustomProperty(string name) => null;
-            public ICustomProperty GetIndexedProperty(string name, Type type) => null;
-            public string GetStringRepresentation() => Value;
+            public ICustomProperty GetCustomProperty(string name) { return null; }
 
-            void Clear()
+            public ICustomProperty GetIndexedProperty(string name, Type type) { return null; }
+
+            public Type Type
+            {
+                get
+                {
+                    return this.GetType();
+                }
+            }
+
+            public string GetStringRepresentation() { return Value; }
+
+            public void Clear()
             {
                 m_calcVM.OnMemoryClear(Position);
             }
 
-            void MemoryAdd()
+            public void MemoryAdd()
             {
                 m_calcVM.OnMemoryAdd(Position);
             }
 
-            void MemorySubtract()
+            public void MemorySubtract()
             {
                 m_calcVM.OnMemorySubtract(Position);
             }
-        }
+
+        };
     }
 }

@@ -1,128 +1,111 @@
-﻿using System;
-using System.Collections.Generic;
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+using CalculationManager;
+using System;
 using System.Text;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Interop;
 
-namespace WindowsCalculator.Shared.ViewModels
+namespace CalculatorApp
 {
-	[Bindable]
-	sealed class HistoryItemViewModel : ICustomPropertyProvider
-	{
-         public internal HistoryItemViewModel(String expression,
-				String result,
-				CalculatorVector<pair<string, int>>> spTokens,
-				CalculatorVector<IExpressionCommand> spCommands)
-		{
+    namespace ViewModel
+    {
+        [Windows.UI.Xaml.Data.Bindable]
+        public sealed class HistoryItemViewModel : ICustomPropertyProvider
+        {
+            CalculatorList<(string, int)> GetTokens()
+            {
+                return m_spTokens;
+            }
 
-		}
+            CalculatorList<IExpressionCommand> GetCommands()
+            {
+                return m_spCommands;
+            }
 
-		internal const CalculatorVector<Vector<string, int>> GetTokens()
-		{
-			return m_spTokens;
-		}
+            public string Expression => m_expression;
 
-		internal const CalculatorVector<IExpressionCommand> GetCommands()
-		{
-			return m_spCommands;
-		}
+            public string AccExpression => m_accExpression;
 
-		//PUBLIC
-		public string Expression
-		{
-			get { return m_expression; }
-		}
+            public string Result => m_result;
 
-		public string AccExpression
-		{
-			get { return m_accExpression; }
-		}
+            public string AccResult => m_accResult;
 
-		public string Result
-		{
-			get { return m_result; }
-		}
+            public ICustomProperty GetCustomProperty(string name) { return null; }
 
-		public string AccResult
-		{
-			get { return m_accResult; }
-		}
+            public ICustomProperty GetIndexedProperty(string name, Type type) { return null; }
+
+            public Type Type => this.GetType();
+
+            public string GetStringRepresentation() { return m_accExpression + " " + m_accResult; }
+
+            private string m_expression;
+            private string m_accExpression;
+            private string m_accResult;
+            private string m_result;
+            private CalculatorList<(string, int)> m_spTokens;
+            private CalculatorList<IExpressionCommand> m_spCommands;
 
 
-		virtual ICustomProperty GetCustomProperty(string name)
-		{
-			return null;
-		}
+            public HistoryItemViewModel(
+                String expression,
+                String result,
+                 CalculatorList<(string, int)> spTokens,
+                 CalculatorList<IExpressionCommand> spCommands)
+            {
+                m_expression = expression;
+                m_result = result;
+                m_spTokens = spTokens;
+                m_spCommands = spCommands;
+                // updating accessibility names for expression and result
+                m_accExpression = GetAccessibleExpressionFromTokens(spTokens, m_expression);
+                m_accResult = LocalizationService.GetNarratorReadableString(m_result);
+            }
 
-		virtual ICustomProperty GetIndexedProperty(string name, TypeName type)
-		{
-			return null;
-		}
+            string GetAccessibleExpressionFromTokens(
+                     CalculatorList<(string, int)> spTokens,
+                     String fallbackExpression)
+            {
+                // updating accessibility names for expression and result
+                StringBuilder accExpression = new StringBuilder();
 
-		virtual public TypeName Type
-		{
-			get
-			{
-				return this.GetType();
-			}
-		}
+                int nTokens;
+                var hr = spTokens.GetSize(out nTokens);
+                if (hr)
+                {
+                    (string, int) tokenItem;
+                    for (int i = 0; i < nTokens; i++)
+                    {
+                        hr = spTokens.GetAt(i, out tokenItem);
+                        if (!hr)
+                        {
+                            break;
+                        }
 
-		virtual string GetStringRepresentation()
-		{
-			return m_accExpression + " " + m_accResult;
-		}
+                        string token = tokenItem.Item1;
+                        accExpression.Append(LocalizationService.GetNarratorReadableToken(token));
+                    }
+                }
 
-		private static string GetAccessibleExpressionFromTokens(CalculatorVector<Vector<string, int>> spTokens, string fallbackExpression)
-		{
-			// updating accessibility names for expression and result
-			wstringstream accExpression { };
-			accExpression << "";
+                if (hr)
+                {
+                    string expressionSuffix = "";
+                    hr = spTokens.GetExpressionSuffix(out expressionSuffix);
+                    if (hr)
+                    {
+                        accExpression.Append(expressionSuffix);
+                    }
+                }
 
-			uint nTokens;
-			HRESULT hr = spTokens.GetSize(nTokens);
-
-			if (SUCCEEDED(hr))
-			{
-				Vector<string, int> tokenItem;
-				for (unsigned int i = 0; i<nTokens; i++)
-				{
-					hr = spTokens.GetAt(i, tokenItem);
-					if (FAILED(hr))
-					{
-						break;
-					}
-
-					wstring token = tokenItem.first;
-					accExpression << LocalizationService.GetNarratorReadableToken(StringReference(token.ToString())).Data();
-				}
-			}
-
-			if (SUCCEEDED(hr))
-			{
-				string expressionSuffix { };
-				hr = spTokens.GetExpressionSuffix(expressionSuffix);
-				if (SUCCEEDED(hr))
-				{
-					accExpression << expressionSuffix;
-				}
-			}
-
-			if (FAILED(hr))
-			{
-				return LocalizationService.GetNarratorReadableString(fallbackExpression);
-			}
-			else
-			{
-				return new String(accExpression.ToString());
-			}
-		}
-
-		// PRIVATE
-        private string m_expression;
-        private string m_accExpression;
-        private string m_accResult;
-        private string m_result;
-        private Object CalculatorVector<pair<string, int>> m_spTokens;
-		private Object CalculatorVector<IExpressionCommand> m_spCommands;
-	}
+                if (!hr)
+                {
+                    return LocalizationService.GetNarratorReadableString(fallbackExpression);
+                }
+                else
+                {
+                    return accExpression.ToString();
+                }
+            }
+        };
+    }
 }

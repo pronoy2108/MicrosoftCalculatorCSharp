@@ -22,6 +22,9 @@ using System.ComponentModel;
 using System.Windows.Input;
 using System.Collections.Generic;
 using static CalculatorApp.CCommand;
+using System.Text;
+using Uno.Extensions;
+using System.Linq;
 
 namespace CalculatorApp.ViewModel
 {
@@ -498,8 +501,8 @@ namespace CalculatorApp.ViewModel
         private DisplayExpressionToken m_selectedExpressionToken;
         string m_feedbackForButtonPress;
 
-        CalculatorVector<(string, int)> m_tokens;
-        CalculatorVector<IExpressionCommand> m_commands;
+        CalculatorList<(string, int)> m_tokens;
+        CalculatorList<IExpressionCommand> m_commands;
 
         public StandardCalculatorViewModel()
         {
@@ -537,8 +540,7 @@ namespace CalculatorApp.ViewModel
             m_localizedNoRightParenthesisAddedFormat = null;
 
 
-            WeakReference calculatorViewModel(this);
-            m_calculatorDisplay.SetCallback(calculatorViewModel);
+            m_calculatorDisplay.SetCallback(new WeakReference(this));
             m_expressionAutomationNameFormat = AppResourceProvider.GetInstance().GetResourceString(CalculatorExpression);
             m_localizedCalculationResultAutomationFormat = AppResourceProvider.GetInstance().GetResourceString(CalculatorResults);
             m_localizedCalculationResultDecimalAutomationFormat =
@@ -553,7 +555,7 @@ namespace CalculatorApp.ViewModel
             CalculationExpressionAutomationName = GetLocalizedStringFormat(m_expressionAutomationNameFormat, "");
 
             // Initialize history view model
-            m_HistoryVM = new HistoryViewModel(&m_standardCalculatorManager);
+            m_HistoryVM = new HistoryViewModel(m_standardCalculatorManager);
             m_HistoryVM.SetCalculatorDisplay(m_calculatorDisplay);
 
             m_decimalSeparator = LocalizationSettings.GetInstance().GetDecimalSeparator();
@@ -581,13 +583,12 @@ namespace CalculatorApp.ViewModel
         {
             string result = displayValue;
 
-            LocalizationSettings.GetInstance().LocalizeDisplayValue(&result);
+            LocalizationSettings.GetInstance().LocalizeDisplayValue(ref result);
 
             // WINBLUE: 440747 - In BiDi languages, error messages need to be wrapped in LRE/PDF
             if (isError && m_isRtlLanguage)
             {
-                result.insert(result.begin(), Utils.LRE);
-                result.push_back(Utils.PDF);
+                result = Utils.LRE + result + Utils.PDF;
             }
 
             return result;
@@ -602,7 +603,7 @@ namespace CalculatorApp.ViewModel
             if (Utils.IsLastCharacterTarget(displayValue, m_decimalSeparator))
             {
                 // remove the decimal separator, to avoid a long pause between words
-                localizedValue = LocalizeDisplayValue(displayValue.substr(0, displayValue.length() - 1), isError);
+                localizedValue = LocalizeDisplayValue(displayValue.Substring(0, displayValue.Length - 1), isError);
 
                 // Use a format which has a word in the decimal separator's place
                 // "The Display is 10 point"
@@ -620,24 +621,24 @@ namespace CalculatorApp.ViewModel
 
         String GetNarratorStringReadRawNumbers(String localizedDisplayValue)
         {
-            stringstream wss;
+            StringBuilder wss = new StringBuilder();
             var locSettings = LocalizationSettings.GetInstance();
 
             // Insert a space after each digit in the string, to force Narrator to read them as separate numbers.
-            string wstrValue(localizedDisplayValue.Data());
-            for (char & c : wstrValue)
+            string wstrValue = localizedDisplayValue;
+            foreach (char c in wstrValue)
             {
-                wss << c;
+                wss.Append(c);
                 if (locSettings.IsLocalizedHexDigit(c))
                 {
-                    wss << ' ';
+                    wss.Append(' ');
                 }
             }
 
-            return new String(wss.str());
+            return wss.ToString();
         }
 
-        void SetPrimaryDisplay(string displayStringValue, bool isError)
+        public void SetPrimaryDisplay(string displayStringValue, bool isError)
         {
             String localizedDisplayStringValue = LocalizeDisplayValue(displayStringValue, isError);
 
@@ -660,7 +661,7 @@ namespace CalculatorApp.ViewModel
             m_standardCalculatorManager.DisplayPasteError();
         }
 
-        void SetParenthesisCount(uint parenthesisCount)
+        public void SetParenthesisCount(uint parenthesisCount)
         {
             if (m_OpenParenthesisCount == parenthesisCount)
             {
@@ -676,8 +677,8 @@ namespace CalculatorApp.ViewModel
 
         void SetOpenParenthesisCountNarratorAnnouncement()
         {
-            string localizedParenthesisCount = to_string(m_OpenParenthesisCount);
-            LocalizationSettings.GetInstance().LocalizeDisplayValue(&localizedParenthesisCount);
+            string localizedParenthesisCount = m_OpenParenthesisCount.ToString();
+            LocalizationSettings.GetInstance().LocalizeDisplayValue(ref localizedParenthesisCount);
 
             String announcement = LocalizationStringUtil.GetLocalizedNarratorAnnouncement(
                 OpenParenthesisCountAutomationFormat,
@@ -687,7 +688,7 @@ namespace CalculatorApp.ViewModel
             Announcement = CalculatorAnnouncement.GetOpenParenthesisCountChangedAnnouncement(announcement);
         }
 
-        void OnNoRightParenAdded()
+        public void OnNoRightParenAdded()
         {
             SetNoParenAddedNarratorAnnouncement();
         }
@@ -728,8 +729,8 @@ namespace CalculatorApp.ViewModel
             }
         }
 
-        void SetExpressionDisplay(
-            CalculatorList<Pair<string, int>> tokens,
+        public void SetExpressionDisplay(
+            CalculatorList<(string, int)> tokens,
             CalculatorList<IExpressionCommand> commands)
         {
             m_tokens = tokens;
@@ -745,10 +746,10 @@ namespace CalculatorApp.ViewModel
         }
 
         void SetHistoryExpressionDisplay(
-             CalculatorList<Pair<string, int>> tokens,
+             CalculatorList<(string, int)> tokens,
             CalculatorList<IExpressionCommand> commands)
         {
-            m_tokens = new CalculatorList<Pair<string, int>>(tokens);
+            m_tokens = new CalculatorList<(string, int)>(tokens);
             m_commands = new CalculatorList<IExpressionCommand>(commands);
             IsEditingEnabled = false;
 
@@ -759,12 +760,12 @@ namespace CalculatorApp.ViewModel
             m_isLastOperationHistoryLoad = true;
         }
 
-        void SetTokens(CalculatorList<pair<string, int>> tokens)
+        void SetTokens(CalculatorList<(string, int)> tokens)
         {
             AreTokensUpdated = false;
 
-            uint nTokens = 0;
-            tokens.GetSize(&nTokens);
+            int nTokens = 0;
+            tokens.GetSize(out nTokens);
 
             if (nTokens == 0)
             {
@@ -772,30 +773,30 @@ namespace CalculatorApp.ViewModel
                 return;
             }
 
-            Pair<string, int> currentToken;
+            (string, int) currentToken;
             var localizer = LocalizationSettings.GetInstance();
 
             const string separator = " ";
             for (int i = 0; i < nTokens; ++i)
             {
-                if (SUCCEEDED(tokens.GetAt(i, &currentToken)))
+                if ((tokens.GetAt(i, out currentToken)))
                 {
                     Common.TokenType type;
-                    bool isEditable = (currentToken.second == -1) ? false : true;
-                    localizer.LocalizeDisplayValue(&(currentToken.first));
+                    bool isEditable = (currentToken.Item2 == -1) ? false : true;
+                    localizer.LocalizeDisplayValue(ref currentToken.Item1);
 
                     if (!isEditable)
                     {
-                        type = currentToken.first == separator ? TokenType.Separator : TokenType.Operator;
+                        type = currentToken.Item1 == separator ? TokenType.Separator : TokenType.Operator;
                     }
                     else
                     {
                         IExpressionCommand command;
-                        IFTPlatformException(m_commands.GetAt(currentToken.second, &command));
+                        IFTPlatformException(m_commands.GetAt(currentToken.Item2, out command));
                         type = command.GetCommandType() == CommandType.OperandCommand ? TokenType.Operand : TokenType.Operator;
                     }
 
-                    var currentTokenString = new String(currentToken.first);
+                    var currentTokenString = currentToken.Item1;
                     if (i < m_ExpressionTokens.Size)
                     {
                         var existingItem = m_ExpressionTokens.GetAt(i);
@@ -836,7 +837,7 @@ namespace CalculatorApp.ViewModel
             return GetLocalizedStringFormat(m_expressionAutomationNameFormat, expression);
         }
 
-        void SetMemorizedNumbers(List<string> newMemorizedNumbers)
+        public void SetMemorizedNumbers(List<string> newMemorizedNumbers)
         {
             var localizer = LocalizationSettings.GetInstance();
             if (newMemorizedNumbers.Count == 0) // Memory has been cleared
@@ -854,8 +855,8 @@ namespace CalculatorApp.ViewModel
 
                     MemoryItemViewModel memorySlot = new MemoryItemViewModel(this);
                     memorySlot.Position = 0;
-                    localizer.LocalizeDisplayValue(stringValue);
-                    memorySlot.Value = Utils.LRO + new String(stringValue) + Utils.PDF;
+                    localizer.LocalizeDisplayValue(ref stringValue);
+                    memorySlot.Value = Utils.LRO + stringValue + Utils.PDF;
 
                     MemorizedNumbers.Insert(0, memorySlot);
                     IsMemoryEmpty = false;
@@ -872,7 +873,7 @@ namespace CalculatorApp.ViewModel
                 for (int i = 0; i < MemorizedNumbers.Count; i++)
                 {
                     var newStringValue = newMemorizedNumbers[i];
-                    localizer.LocalizeDisplayValue(newStringValue);
+                    localizer.LocalizeDisplayValue(ref newStringValue);
 
                     // If the value is different, update the value
                     if (MemorizedNumbers[i].Value != newStringValue)
@@ -895,12 +896,12 @@ namespace CalculatorApp.ViewModel
             {
                 return;
             }
-            if ((displayExpressionToken.Token == null) || (displayExpressionToken.Token.Length() == 0))
+            if ((displayExpressionToken.Token == null) || (displayExpressionToken.Token.Length == 0))
             {
                 displayExpressionToken.CommandIndex = 0;
             }
 
-            char ch = 0;
+            char ch = '\0';
             if ((cmdenum >= Command.Command0) && (cmdenum <= Command.Command9))
             {
                 switch (cmdenum)
@@ -1131,7 +1132,7 @@ namespace CalculatorApp.ViewModel
             }
             else
             {
-                returnCopyPasteManager.ByteType;
+                return CopyPasteManager.ByteType;
             }
         }
 
@@ -1195,13 +1196,13 @@ namespace CalculatorApp.ViewModel
 
         CalculationManager.Command ConvertToOperatorsEnum(NumbersAndOperatorsEnum operation)
         {
-            return Command > (operation);
+            return (Command)(operation);
         }
 
         void OnPaste(String pastedString, ViewMode mode)
         {
             // If pastedString is invalid("NoOp") then display pasteError else process the string
-            if (pastedString == string(CopyPasteManager.PasteErrorString))
+            if (pastedString == CopyPasteManager.PasteErrorString)
             {
                 this.DisplayPasteError();
                 return;
@@ -1215,21 +1216,21 @@ namespace CalculatorApp.ViewModel
             bool sentEquals = false;
             bool isPreviousOperator = false;
 
-            List<bool> negateStack;
+            List<bool> negateStack = new List<bool>();
 
             // Iterate through each character pasted, and if it's valid, send it to the model.
-            var it = pastedString.Begin();
+            var it = pastedString.GetEnumerator();
 
-            while (it != pastedString.End())
+            while (it.MoveNext())
             {
                 bool sendCommand = true;
                 bool canSendNegate = false;
 
-                NumbersAndOperatorsEnum mappedNumOp = MapCharacterToButtonId(*it, canSendNegate);
+                NumbersAndOperatorsEnum mappedNumOp = MapCharacterToButtonId(it.Current, canSendNegate);
 
                 if (mappedNumOp == NumbersAndOperatorsEnum.None)
                 {
-                    ++it;
+                    it.MoveNext();
                     continue;
                 }
 
@@ -1258,16 +1259,16 @@ namespace CalculatorApp.ViewModel
                 {
                     // Opening parenthesis starts a new expression and pushes negation state onto the stack
                     case NumbersAndOperatorsEnum.OpenParenthesis:
-                        negateStack.push_back(sendNegate);
+                        negateStack.Add(sendNegate);
                         sendNegate = false;
                         break;
 
                     // Closing parenthesis pops the negation state off the stack and sends it down to the calc engine
                     case NumbersAndOperatorsEnum.CloseParenthesis:
-                        if (!negateStack.empty())
+                        if (!negateStack.Empty())
                         {
-                            sendNegate = negateStack.back();
-                            negateStack.pop_back();
+                            sendNegate = negateStack.Last();
+                            negateStack.RemoveAt(negateStack.Count - 1);
                             canSendNegate = true;
                         }
                         else
@@ -1486,15 +1487,15 @@ namespace CalculatorApp.ViewModel
             Announcement = CalculatorAnnouncement.GetMemoryItemAddedAnnouncement(announcement);
         }
 
-        void OnMemoryItemChanged(uint indexOfMemory)
+        public void OnMemoryItemChanged(uint indexOfMemory)
         {
             if (indexOfMemory < MemorizedNumbers.Count)
             {
-                MemoryItemViewModel memSlot = MemorizedNumbers.GetAt(indexOfMemory);
+                MemoryItemViewModel memSlot = MemorizedNumbers[indexOfMemory];
                 String localizedValue = memSlot.Value;
 
                 string localizedIndex = to_string(indexOfMemory + 1);
-                LocalizationSettings.GetInstance().LocalizeDisplayValue(&localizedIndex);
+                LocalizationSettings.GetInstance().LocalizeDisplayValue(ref localizedIndex);
 
                 String announcement = LocalizationStringUtil.GetLocalizedNarratorAnnouncement(
                     MemoryItemChanged, m_localizedMemoryItemChangedAutomationFormat, localizedIndex, localizedValue.Data());
@@ -1517,7 +1518,7 @@ namespace CalculatorApp.ViewModel
             }
         }
 
-        void OnMemoryAdd(object memoryItemPosition)
+        public void OnMemoryAdd(object memoryItemPosition)
         {
             // M+ will add display to memorylist if memory list is empty.
             int windowId = Utils.GetWindowId();
@@ -1538,15 +1539,15 @@ namespace CalculatorApp.ViewModel
             }
         }
 
-        void OnMemorySubtract(object memoryItemPosition)
+        public void OnMemorySubtract(object memoryItemPosition)
         {
             int windowId = Utils.GetWindowId();
 
             // M- will add negative of displayed number to memorylist if memory list is empty.
             if (MemorizedNumbers != null)
             {
-                var boxedPosition = safe_cast < Box<int>(memoryItemPosition);
-                if (MemorizedNumbers.Size > 0)
+                var boxedPosition = (int)(memoryItemPosition);
+                if (MemorizedNumbers.Count > 0)
                 {
                     //TraceLogger.GetInstance().LogMemoryUsed(windowId, boxedPosition.Value, IsStandard, IsScientific, IsProgrammer, MemorizedNumbers.Size);
                     //TraceLogger.GetInstance().UpdateMemoryMap(windowId, boxedPosition.Value, IsStandard, IsScientific, IsProgrammer);
@@ -1555,11 +1556,11 @@ namespace CalculatorApp.ViewModel
                 {
                     //TraceLogger.GetInstance().InsertIntoMemoryMap(windowId, IsStandard, IsScientific, IsProgrammer);
                 }
-                m_standardCalculatorManager.MemorizedNumberSubtract(boxedPosition.Value);
+                m_standardCalculatorManager.MemorizedNumberSubtract(boxedPosition);
             }
         }
 
-        void OnMemoryClear(object memoryItemPosition)
+        public void OnMemoryClear(object memoryItemPosition)
         {
             if (MemorizedNumbers && MemorizedNumbers.Size > 0)
             {
@@ -1586,7 +1587,7 @@ namespace CalculatorApp.ViewModel
                     //TraceLogger.GetInstance().DeleteFromMemoryMap(windowId, boxedPosition.Value);
 
                     string localizedIndex = to_string(boxedPosition.Value + 1);
-                    LocalizationSettings.GetInstance().LocalizeDisplayValue(&localizedIndex);
+                    LocalizationSettings.GetInstance().LocalizeDisplayValue(ref localizedIndex);
 
                     String announcement = LocalizationStringUtil.GetLocalizedNarratorAnnouncement(
                         MemoryItemCleared, m_localizedMemoryItemClearedAutomationFormat, localizedIndex);
@@ -1696,7 +1697,7 @@ namespace CalculatorApp.ViewModel
             //    if (IsInError)
             //    {
             //        CalculatorList<IExpressionCommand> commandVector = Utils.DeserializeCommands(reader);
-            //        CalculatorList<pair<string, int>> tokenVector = Utils.DeserializeTokens(reader);
+            //        CalculatorList<(string, int)> tokenVector = Utils.DeserializeTokens(reader);
             //        SetExpressionDisplay(tokenVector, commandVector);
             //    }
             //}
@@ -1826,18 +1827,18 @@ namespace CalculatorApp.ViewModel
             }
         }
 
-        void SaveEditedCommand(uint tokenPosition, Command command)
+        void SaveEditedCommand(int tokenPosition, Command command)
         {
-            pair<string, int> token;
+            (string, int) token;
             bool handleOperand = false;
             int nOpCode = (int)(command);
             string updatedToken = "";
 
             IExpressionCommand tokenCommand;
-            IFTPlatformException(m_tokens.GetAt(tokenPosition, &token));
+            IFTPlatformException(m_tokens.GetAt(tokenPosition, out token));
 
-            uint tokenCommandIndex = token.second;
-            IFTPlatformException(m_commands.GetAt(tokenCommandIndex, &tokenCommand));
+            int tokenCommandIndex = token.Item2;
+            IFTPlatformException(m_commands.GetAt(tokenCommandIndex, out tokenCommand));
 
             if (IsUnaryOp(nOpCode) && command != Command.CommandSIGN)
             {
@@ -1881,10 +1882,10 @@ namespace CalculatorApp.ViewModel
                     default:
                         updatedToken = CCalcEngine.OpCodeToUnaryString(nOpCode, false, angleType);
                 }
-                if ((token.first.length() > 0) && (token.first[token.first.length() - 1] == '('))
+                if ((token.Item1.Length > 0) && (token.Item1[token.Item1.Length - 1] == '('))
                 {
                     string chOpenBrace = "(";
-                    updatedToken.append(chOpenBrace);
+                    updatedToken += chOpenBrace;
                 }
             }
             else if (IsBinOp(nOpCode))
@@ -1918,9 +1919,9 @@ namespace CalculatorApp.ViewModel
             {
                 IFTPlatformException(m_commands.SetAt(tokenCommandIndex, tokenCommand));
 
-                pair<string, int> selectedToken;
-                IFTPlatformException(m_tokens.GetAt(tokenPosition, &selectedToken));
-                selectedToken.first = updatedToken;
+                (string, int) selectedToken;
+                IFTPlatformException(m_tokens.GetAt(tokenPosition, out selectedToken));
+                selectedToken.Item1 = updatedToken;
                 IFTPlatformException(m_tokens.SetAt(tokenPosition, selectedToken));
 
                 DisplayExpressionToken displayExpressionToken = ExpressionTokens.GetAt(tokenPosition);
@@ -1941,13 +1942,13 @@ namespace CalculatorApp.ViewModel
             Command currentDegreeMode = m_standardCalculatorManager.GetCurrentDegreeMode();
             CalculatorList<IExpressionCommand> savedCommands = new CalculatorList<IExpressionCommand>();
 
-            List<int> currentCommands;
-            uint commandListCount;
-            m_commands.GetSize(&commandListCount);
+            List<int> currentCommands = new List<int>();
+            int commandListCount;
+            m_commands.GetSize(out commandListCount);
             for (uint i = 0; i < commandListCount; i++)
             {
                 IExpressionCommand command;
-                IFTPlatformException(m_commands.GetAt(i, &command));
+                IFTPlatformException(m_commands.GetAt(i, out command));
 
                 savedCommands.Append(command);
                 CommandType commandType = command.GetCommandType();
@@ -1957,12 +1958,12 @@ namespace CalculatorApp.ViewModel
                     IUnaryCommand spCommand = (IUnaryCommand)(command);
                     CalculatorList<int> unaryCommands = spCommand.GetCommands();
                     uint unaryCommandCount;
-                    unaryCommands.GetSize(&unaryCommandCount);
+                    unaryCommands.GetSize(out unaryCommandCount);
 
                     int nUCode;
                     for (uint j = 0; j < unaryCommandCount; ++j)
                     {
-                        IFTPlatformException(unaryCommands.GetAt(j, &nUCode));
+                        IFTPlatformException(unaryCommands.GetAt(j, out nUCode));
                         currentCommands.Add(nUCode);
                     }
                 }
@@ -1984,13 +1985,13 @@ namespace CalculatorApp.ViewModel
                     IOpndCommand spCommand = (IOpndCommand)(command);
                     CalculatorList<int> opndCommands = spCommand.GetCommands();
                     uint opndCommandCount;
-                    opndCommands.GetSize(&opndCommandCount);
+                    opndCommands.GetSize(out opndCommandCount);
                     bool fNeedIDCSign = spCommand.IsNegative();
 
                     int nOCode;
                     for (uint j = 0; j < opndCommandCount; ++j)
                     {
-                        IFTPlatformException(opndCommands.GetAt(j, &nOCode));
+                        IFTPlatformException(opndCommands.GetAt(j, out nOCode));
                         currentCommands.Add(nOCode);
 
                         if (fNeedIDCSign && nOCode != IDC_0)
@@ -2001,15 +2002,15 @@ namespace CalculatorApp.ViewModel
                     }
                 }
             }
-            CalculatorList<pair<string, int>> savedTokens = new CalculatorList<pair<string, int>>();
+            CalculatorList<(string, int)> savedTokens = new CalculatorList<(string, int)>();
 
-            uint tokenCount;
-            IFTPlatformException(m_tokens.GetSize(&tokenCount));
+            int tokenCount;
+            IFTPlatformException(m_tokens.GetSize(out tokenCount));
 
-            for (uint i = 0; i < tokenCount; ++i)
+            for (int i = 0; i < tokenCount; ++i)
             {
-                pair<string, int> currentToken;
-                IFTPlatformException(m_tokens.GetAt(i, &currentToken));
+                (string, int) currentToken;
+                IFTPlatformException(m_tokens.GetAt(i, out currentToken));
                 savedTokens.Append(currentToken);
             }
 
@@ -2025,7 +2026,7 @@ namespace CalculatorApp.ViewModel
             }
 
             m_standardCalculatorManager.SendCommand(currentDegreeMode);
-            int currentCommandsSize = currentCommands.size();
+            int currentCommandsSize = currentCommands.Count;
             for (int i = 0; i < currentCommandsSize; i++)
             {
                 m_standardCalculatorManager.SendCommand((CalculationManager.Command)(currentCommands[i]));
@@ -2046,14 +2047,14 @@ namespace CalculatorApp.ViewModel
             }
         }
 
-        CommandType GetSelectedTokenType(uint tokenPosition)
+        CommandType GetSelectedTokenType(int tokenPosition)
         {
-            pair<string, int> token;
+            (string, int) token;
             IExpressionCommand tokenCommand;
-            IFTPlatformException(m_tokens.GetAt(tokenPosition, &token));
+            IFTPlatformException(m_tokens.GetAt(tokenPosition, out token));
 
-            uint tokenCommandIndex = token.second;
-            IFTPlatformException(m_commands.GetAt(tokenCommandIndex, &tokenCommand));
+            int tokenCommandIndex = token.Item2;
+            IFTPlatformException(m_commands.GetAt(tokenCommandIndex, out tokenCommand));
 
             return tokenCommand.GetCommandType();
         }
@@ -2259,34 +2260,35 @@ namespace CalculatorApp.ViewModel
 
         void UpdateOperand(int pos, String text)
         {
-            pair<string, int> p;
-            m_tokens.GetAt(pos, &p);
+            (string, int) p;
+            m_tokens.GetAt(pos, out p);
 
             String englishString = LocalizationSettings.GetInstance().GetEnglishValueFromLocalizedDigits(text.Data());
-            p.first = englishString;
+            p.Item1 = englishString;
 
-            int commandPos = p.second;
-            IExpressionCommand exprCmd = m_commands[commandPos];
+            int commandPos = p.Item2;
+            IExpressionCommand exprCmd;
+            m_commands.GetAt(commandPos, out exprCmd);
             var operandCommand = (IOpndCommand)(exprCmd);
 
             if (operandCommand != null)
             {
                 CalculatorList<int> commands = new CalculatorList<int>();
-                int length = p.first.length();
+                int length = p.Item1.Length;
                 if (length > 0)
                 {
                     int num = 0;
-                    for (uint i = 0; i < length; ++i)
+                    for (int i = 0; i < length; ++i)
                     {
-                        if (p.first[i] == '.')
+                        if (p.Item1[i] == '.')
                         {
                             num = (int)(Command.CommandPNT);
                         }
-                        else if (p.first[i] == 'e')
+                        else if (p.Item1[i] == 'e')
                         {
                             num = (int)(Command.CommandEXP);
                         }
-                        else if (p.first[i] == '-')
+                        else if (p.Item1[i] == '-')
                         {
                             num = (int)(Command.CommandSIGN);
 
@@ -2302,7 +2304,7 @@ namespace CalculatorApp.ViewModel
                         }
                         else
                         {
-                            num = (int)(p.first[i]) - ASCII_0;
+                            num = (int)(p.Item1[i]) - ASCII_0;
                             num += IDC_0;
                             if (num == (int)(Command.CommandMPLUS))
                             {
@@ -2377,7 +2379,7 @@ namespace CalculatorApp.ViewModel
             }
 
             uint size = 0;
-            commands.GetSize(&size);
+            commands.GetSize(out size);
             if (size > 0)
             {
                 IOpndCommand sp = new COpndCommand(commands, isNegative, isDecimal, isExpMode);
@@ -2386,7 +2388,7 @@ namespace CalculatorApp.ViewModel
             Recalculate();
         }
 
-        void OnMaxDigitsReached()
+        public void OnMaxDigitsReached()
         {
             String announcement = LocalizationStringUtil.GetLocalizedNarratorAnnouncement(
                 MaxDigitsReachedFormat, m_localizedMaxDigitsReachedAutomationFormat, m_CalculationResultAutomationName.Data());
@@ -2394,7 +2396,7 @@ namespace CalculatorApp.ViewModel
             Announcement = CalculatorAnnouncement.GetMaxDigitsReachedAnnouncement(announcement);
         }
 
-        void OnBinaryOperatorReceived()
+        public void OnBinaryOperatorReceived()
         {
             Announcement = GetDisplayUpdatedNarratorAnnouncement();
         }

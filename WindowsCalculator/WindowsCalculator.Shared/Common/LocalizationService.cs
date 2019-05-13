@@ -157,7 +157,7 @@ namespace CalculatorApp.Common
             return m_flowDirection;
         }
 
-        bool IsRtlLayout()
+        public bool IsRtlLayout()
         {
             return m_flowDirection == FlowDirection.RightToLeft;
         }
@@ -349,7 +349,7 @@ namespace CalculatorApp.Common
 
         // If successful, returns a formatter that respects the user's regional format settings,
         // as configured by running intl.cpl.
-        DecimalFormatter GetRegionalSettingsAwareDecimalFormatter()
+        public static DecimalFormatter GetRegionalSettingsAwareDecimalFormatter()
         {
             IIterable<String> languageIdentifiers = GetLanguageIdentifiers();
             if (languageIdentifiers != null)
@@ -485,8 +485,9 @@ namespace CalculatorApp.Common
 
                                                                                     // Y Root scientific function
                                                                                     ("16", "YRoot")
-            };
-        Dictionary<string, string> GetTokenToReadableNameMap()
+        };
+
+        static Dictionary<string, string> GetTokenToReadableNameMap()
         {
             Dictionary<string, string> tokenToReadableNameMap = new Dictionary<string, string>();
             var resProvider = AppResourceProvider.GetInstance();
@@ -500,27 +501,35 @@ namespace CalculatorApp.Common
 
                 tokenToReadableNameMap.emplace(engineStr + openParen, automationName);
             }
-            s_parenEngineKeyResourceMap.clear();
+            // s_parenEngineKeyResourceMap.clear();
 
-            for (const auto& keyPair : s_noParenEngineKeyResourceMap)
+            foreach (var keyPair in s_noParenEngineKeyResourceMap)
             {
-                string engineStr = resProvider.GetCEngineString(string(keyPair.first.c_str())).Data();
-                string automationName = resProvider.GetResourceString(string(keyPair.second.c_str())).Data();
+                string engineStr = resProvider.GetCEngineString(keyPair.Item1);
+                string automationName = resProvider.GetResourceString(keyPair.Item2);
 
-                tokenToReadableNameMap.emplace(engineStr, automationName);
+                if (!tokenToReadableNameMap.ContainsKey(engineStr))
+                {
+                    tokenToReadableNameMap[engineStr] = automationName;
+                }
             }
-            s_noParenEngineKeyResourceMap.clear();
+            // s_noParenEngineKeyResourceMap.clear();
 
             // Also replace hyphens with "minus"
-            string minusText = resProvider.GetResourceString("minus").Data();
-            tokenToReadableNameMap.emplace("-", minusText);
+            string minusText = resProvider.GetResourceString("minus";
+
+            if (!tokenToReadableNameMap.ContainsKey("-"))
+            {
+                tokenToReadableNameMap["-"] = minusText;
+            }
 
             return tokenToReadableNameMap;
         }
 
+        static Dictionary<string, string> s_tokenToReadableNameMap = GetTokenToReadableNameMap();
+
         string GetNarratorReadableToken(string rawToken)
         {
-            static unordered_map<wstring, wstring> s_tokenToReadableNameMap = GetTokenToReadableNameMap();
 
             var itr = s_tokenToReadableNameMap.find(rawToken.Data());
             if (itr == s_tokenToReadableNameMap.end())

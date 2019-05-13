@@ -18,6 +18,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)CalcManager\CalculatorList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CalcManager\CalculatorManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CalcManager\CalculatorMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CalcManager\Command.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CalcManager\ExpressionCommandInterface.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CalcManager\RadixType.cs" />
@@ -27,10 +30,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\AppResourceProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\BindableBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\CalculatorButtonUser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\CalculatorDisplay.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\CCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\CopyPasteManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\DisplayExpressionToken.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\LocalizationService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\LocalizationSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\MyVirtualKey.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\NavCategory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\TitleBarHelper.cs" />

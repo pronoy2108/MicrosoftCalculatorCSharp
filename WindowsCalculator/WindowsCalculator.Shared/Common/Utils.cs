@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
@@ -24,6 +25,11 @@ namespace CalculatorApp
             }
 
             return windowId;
+        }
+
+        public static bool IsLastCharacterTarget(string input, char target)
+        {
+            return !string.IsNullOrEmpty(input) && input.Last() == target;
         }
     }
 }
