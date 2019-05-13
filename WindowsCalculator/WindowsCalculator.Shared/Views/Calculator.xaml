@@ -189,15 +189,13 @@
 															Padding="0,0,0,0"
 															VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
 															Style="{StaticResource ResultsScrollerSnapped}"
-															AutomationProperties.AccessibilityView="Raw"
-															LayoutUpdated="expressionContainer_LayoutUpdated">
+															AutomationProperties.AccessibilityView="Raw">
 									<ListView x:Name="TokenList"
 														Padding="0"
 														VerticalAlignment="Stretch"
 														HorizontalContentAlignment="Right"
 														VerticalContentAlignment="Stretch"
 														IsTabStop="False"
-														ItemContainerStyleSelector="{StaticResource ExpressionItemContainerStyle}"
 														ItemTemplateSelector="{StaticResource ExpressionItemTemplateSelector}"
 														ItemsSource="{Binding ExpressionTokens}"
 														ScrollViewer.HorizontalScrollBarVisibility="Hidden"
@@ -568,12 +566,6 @@
 																								OperatorTemplate="{StaticResource Operator}"
 																								SeparatorTemplate="{StaticResource Separator}" />
 
-		<converters:ExpressionItemContainerStyle x:Key="ExpressionItemContainerStyle"
-																							EditableOperatorStyle="{StaticResource NonEditableOperatorContainerStyle}"
-																							NonEditableOperatorStyle="{StaticResource NonEditableOperatorContainerStyle}"
-																							OperandStyle="{StaticResource NonEditableOperatorContainerStyle}"
-																							SeparatorStyle="{StaticResource NonEditableOperatorContainerStyle}" />
-
 		<!-- Miscellaneous Resources -->
 
 		<!--
@@ -584,7 +576,9 @@
 		<!-- Used by hidden shortcut buttons -->
 		<x:Int32 x:Key="Zero">0</x:Int32>
 
-		<MenuFlyout x:Key="DisplayContextMenu">
+		<!--
+    UNO TODO
+    <MenuFlyout x:Key="DisplayContextMenu">
 			<MenuFlyoutItem x:Name="CopyMenuItem"
 											x:Uid="CopyMenuItem"
 											Command="{x:Bind Model.CopyCommand}"
@@ -593,8 +587,166 @@
 											x:Uid="PasteMenuItem"
 											Command="{x:Bind Model.PasteCommand}"
 											Icon="Paste" />
-		</MenuFlyout>
-	</UserControl.Resources>
+		</MenuFlyout>-->
+
+    <!-- UNO TODO Moved styles from inner -->
+    <Style x:Key="BaseContentControlStyle"
+        TargetType="ContentControl">
+      <Setter Property="FontFamily"
+              Value="XamlAutoFontFamily" />
+      <Setter Property="FontWeight"
+              Value="SemiBold" />
+      <Setter Property="FontSize"
+              Value="15" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ContentControl">
+            <ContentPresenter Margin="{TemplateBinding Padding}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              ContentTransitions="{TemplateBinding ContentTransitions}"
+                              OpticalMarginAlignment="TrimSideBearings" />
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+    <Style x:Key="TitleContentControlStyle"
+            BasedOn="{StaticResource BaseContentControlStyle}"
+            TargetType="ContentControl">
+      <Setter Property="FontFamily"
+              Value="{ThemeResource PivotTitleFontFamily}" />
+      <Setter Property="FontWeight"
+              Value="{ThemeResource PivotTitleThemeFontWeight}" />
+      <Setter Property="FontSize"
+              Value="{ThemeResource PivotTitleFontSize}" />
+    </Style>
+
+    <ControlTemplate x:Key="NextTemplate"
+                  TargetType="Button">
+      <Border x:Name="Root"
+              Background="{ThemeResource PivotNextButtonBackground}"
+              BorderBrush="{ThemeResource PivotNextButtonBorderBrush}"
+              BorderThickness="{ThemeResource PivotNavButtonBorderThemeThickness}">
+        <VisualStateManager.VisualStateGroups>
+          <VisualStateGroup x:Name="CommonStates">
+            <VisualState x:Name="Normal" />
+            <VisualState x:Name="PointerOver">
+              <Storyboard>
+                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root"
+                                                Storyboard.TargetProperty="Background">
+                  <DiscreteObjectKeyFrame KeyTime="0"
+                                          Value="{ThemeResource PivotNextButtonBackgroundPointerOver}" />
+                </ObjectAnimationUsingKeyFrames>
+                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root"
+                                                Storyboard.TargetProperty="BorderBrush">
+                  <DiscreteObjectKeyFrame KeyTime="0"
+                                          Value="{ThemeResource PivotNextButtonBorderBrushPointerOver}" />
+                </ObjectAnimationUsingKeyFrames>
+                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow"
+                                                Storyboard.TargetProperty="Foreground">
+                  <DiscreteObjectKeyFrame KeyTime="0"
+                                          Value="{ThemeResource PivotNextButtonForegroundPointerOver}" />
+                </ObjectAnimationUsingKeyFrames>
+              </Storyboard>
+            </VisualState>
+            <VisualState x:Name="Pressed">
+              <Storyboard>
+                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root"
+                                                Storyboard.TargetProperty="Background">
+                  <DiscreteObjectKeyFrame KeyTime="0"
+                                          Value="{ThemeResource PivotNextButtonBackgroundPressed}" />
+                </ObjectAnimationUsingKeyFrames>
+                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root"
+                                                Storyboard.TargetProperty="BorderBrush">
+                  <DiscreteObjectKeyFrame KeyTime="0"
+                                          Value="{ThemeResource PivotNextButtonBorderBrushPressed}" />
+                </ObjectAnimationUsingKeyFrames>
+                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow"
+                                                Storyboard.TargetProperty="Foreground">
+                  <DiscreteObjectKeyFrame KeyTime="0"
+                                          Value="{ThemeResource PivotNextButtonForegroundPressed}" />
+                </ObjectAnimationUsingKeyFrames>
+              </Storyboard>
+            </VisualState>
+          </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <FontIcon x:Name="Arrow"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  Foreground="{ThemeResource PivotNextButtonForeground}"
+                  FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                  FontSize="12"
+                  Glyph="&#xE0E3;"
+                  MirroredWhenRightToLeft="True"
+                  UseLayoutRounding="False" />
+      </Border>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="PreviousTemplate"
+                      TargetType="Button">
+      <Border x:Name="Root"
+              Background="{ThemeResource PivotPreviousButtonBackground}"
+              BorderBrush="{ThemeResource PivotPreviousButtonBorderBrush}"
+              BorderThickness="{ThemeResource PivotNavButtonBorderThemeThickness}">
+        <VisualStateManager.VisualStateGroups>
+          <VisualStateGroup x:Name="CommonStates">
+            <VisualState x:Name="Normal" />
+            <VisualState x:Name="PointerOver">
+              <Storyboard>
+                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root"
+                                                Storyboard.TargetProperty="Background">
+                  <DiscreteObjectKeyFrame KeyTime="0"
+                                          Value="{ThemeResource PivotPreviousButtonBackgroundPointerOver}" />
+                </ObjectAnimationUsingKeyFrames>
+                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root"
+                                                Storyboard.TargetProperty="BorderBrush">
+                  <DiscreteObjectKeyFrame KeyTime="0"
+                                          Value="{ThemeResource PivotPreviousButtonBorderBrushPointerOver}" />
+                </ObjectAnimationUsingKeyFrames>
+                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow"
+                                                Storyboard.TargetProperty="Foreground">
+                  <DiscreteObjectKeyFrame KeyTime="0"
+                                          Value="{ThemeResource PivotPreviousButtonForegroundPointerOver}" />
+                </ObjectAnimationUsingKeyFrames>
+              </Storyboard>
+            </VisualState>
+            <VisualState x:Name="Pressed">
+              <Storyboard>
+                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root"
+                                                Storyboard.TargetProperty="Background">
+                  <DiscreteObjectKeyFrame KeyTime="0"
+                                          Value="{ThemeResource PivotPreviousButtonBackgroundPressed}" />
+                </ObjectAnimationUsingKeyFrames>
+                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root"
+                                                Storyboard.TargetProperty="BorderBrush">
+                  <DiscreteObjectKeyFrame KeyTime="0"
+                                          Value="{ThemeResource PivotPreviousButtonBorderBrushPressed}" />
+                </ObjectAnimationUsingKeyFrames>
+                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow"
+                                                Storyboard.TargetProperty="Foreground">
+                  <DiscreteObjectKeyFrame KeyTime="0"
+                                          Value="{ThemeResource PivotPreviousButtonForegroundPressed}" />
+                </ObjectAnimationUsingKeyFrames>
+              </Storyboard>
+            </VisualState>
+          </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <FontIcon x:Name="Arrow"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  Foreground="{ThemeResource PivotPreviousButtonForeground}"
+                  FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                  FontSize="12"
+                  Glyph="&#xE0E2;"
+                  MirroredWhenRightToLeft="True"
+                  UseLayoutRounding="False" />
+      </Border>
+    </ControlTemplate>
+
+
+  </UserControl.Resources>
 
 	<Grid AutomationProperties.LandmarkType="Main">
 		<Grid.ColumnDefinitions>
@@ -755,25 +907,25 @@
 					<VisualState.StateTriggers>
 						<AdaptiveTrigger MinWindowHeight="800" />
 					</VisualState.StateTriggers>
-					<Storyboard Completed="OnResultsLayoutChanged" />
+					<Storyboard />
 				</VisualState>
 				<VisualState x:Name="ResultsProgM">
 					<VisualState.StateTriggers>
 						<AdaptiveTrigger MinWindowHeight="640" />
 					</VisualState.StateTriggers>
-					<Storyboard Completed="OnResultsLayoutChanged" />
+					<Storyboard />
 				</VisualState>
 				<VisualState x:Name="ResultsSciM">
 					<VisualState.StateTriggers>
 						<AdaptiveTrigger MinWindowHeight="544" />
 					</VisualState.StateTriggers>
-					<Storyboard Completed="OnResultsLayoutChanged" />
+					<Storyboard />
 				</VisualState>
 				<VisualState x:Name="ResultsS">
 					<VisualState.StateTriggers>
 						<AdaptiveTrigger MinWindowHeight="0" />
 					</VisualState.StateTriggers>
-					<Storyboard Completed="OnResultsLayoutChanged" />
+					<Storyboard />
 				</VisualState>
 			</VisualStateGroup>
 		</VisualStateManager.VisualStateGroups>
@@ -1003,38 +1155,6 @@
 								Background="{TemplateBinding Background}">
 
 						<Grid.Resources>
-							<Style x:Key="BaseContentControlStyle"
-											TargetType="ContentControl">
-								<Setter Property="FontFamily"
-												Value="XamlAutoFontFamily" />
-								<Setter Property="FontWeight"
-												Value="SemiBold" />
-								<Setter Property="FontSize"
-												Value="15" />
-								<Setter Property="Template">
-									<Setter.Value>
-										<ControlTemplate TargetType="ContentControl">
-											<ContentPresenter Margin="{TemplateBinding Padding}"
-																				HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-																				VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-																				Content="{TemplateBinding Content}"
-																				ContentTemplate="{TemplateBinding ContentTemplate}"
-																				ContentTransitions="{TemplateBinding ContentTransitions}"
-																				OpticalMarginAlignment="TrimSideBearings" />
-										</ControlTemplate>
-									</Setter.Value>
-								</Setter>
-							</Style>
-							<Style x:Key="TitleContentControlStyle"
-											BasedOn="{StaticResource BaseContentControlStyle}"
-											TargetType="ContentControl">
-								<Setter Property="FontFamily"
-												Value="{ThemeResource PivotTitleFontFamily}" />
-								<Setter Property="FontWeight"
-												Value="{ThemeResource PivotTitleThemeFontWeight}" />
-								<Setter Property="FontSize"
-												Value="{ThemeResource PivotTitleFontSize}" />
-							</Style>
 						</Grid.Resources>
 
 						<Grid.RowDefinitions>
@@ -1148,127 +1268,6 @@
 
 						<Grid Grid.Row="1">
 							<Grid.Resources>
-								<ControlTemplate x:Key="NextTemplate"
-																	TargetType="Button">
-									<Border x:Name="Root"
-													Background="{ThemeResource PivotNextButtonBackground}"
-													BorderBrush="{ThemeResource PivotNextButtonBorderBrush}"
-													BorderThickness="{ThemeResource PivotNavButtonBorderThemeThickness}">
-										<VisualStateManager.VisualStateGroups>
-											<VisualStateGroup x:Name="CommonStates">
-												<VisualState x:Name="Normal" />
-												<VisualState x:Name="PointerOver">
-													<Storyboard>
-														<ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root"
-																														Storyboard.TargetProperty="Background">
-															<DiscreteObjectKeyFrame KeyTime="0"
-																											Value="{ThemeResource PivotNextButtonBackgroundPointerOver}" />
-														</ObjectAnimationUsingKeyFrames>
-														<ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root"
-																														Storyboard.TargetProperty="BorderBrush">
-															<DiscreteObjectKeyFrame KeyTime="0"
-																											Value="{ThemeResource PivotNextButtonBorderBrushPointerOver}" />
-														</ObjectAnimationUsingKeyFrames>
-														<ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow"
-																														Storyboard.TargetProperty="Foreground">
-															<DiscreteObjectKeyFrame KeyTime="0"
-																											Value="{ThemeResource PivotNextButtonForegroundPointerOver}" />
-														</ObjectAnimationUsingKeyFrames>
-													</Storyboard>
-												</VisualState>
-												<VisualState x:Name="Pressed">
-													<Storyboard>
-														<ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root"
-																														Storyboard.TargetProperty="Background">
-															<DiscreteObjectKeyFrame KeyTime="0"
-																											Value="{ThemeResource PivotNextButtonBackgroundPressed}" />
-														</ObjectAnimationUsingKeyFrames>
-														<ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root"
-																														Storyboard.TargetProperty="BorderBrush">
-															<DiscreteObjectKeyFrame KeyTime="0"
-																											Value="{ThemeResource PivotNextButtonBorderBrushPressed}" />
-														</ObjectAnimationUsingKeyFrames>
-														<ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow"
-																														Storyboard.TargetProperty="Foreground">
-															<DiscreteObjectKeyFrame KeyTime="0"
-																											Value="{ThemeResource PivotNextButtonForegroundPressed}" />
-														</ObjectAnimationUsingKeyFrames>
-													</Storyboard>
-												</VisualState>
-											</VisualStateGroup>
-										</VisualStateManager.VisualStateGroups>
-										<FontIcon x:Name="Arrow"
-															HorizontalAlignment="Center"
-															VerticalAlignment="Center"
-															Foreground="{ThemeResource PivotNextButtonForeground}"
-															FontFamily="{ThemeResource SymbolThemeFontFamily}"
-															FontSize="12"
-															Glyph="&#xE0E3;"
-															MirroredWhenRightToLeft="True"
-															UseLayoutRounding="False" />
-									</Border>
-								</ControlTemplate>
-
-								<ControlTemplate x:Key="PreviousTemplate"
-																	TargetType="Button">
-									<Border x:Name="Root"
-													Background="{ThemeResource PivotPreviousButtonBackground}"
-													BorderBrush="{ThemeResource PivotPreviousButtonBorderBrush}"
-													BorderThickness="{ThemeResource PivotNavButtonBorderThemeThickness}">
-										<VisualStateManager.VisualStateGroups>
-											<VisualStateGroup x:Name="CommonStates">
-												<VisualState x:Name="Normal" />
-												<VisualState x:Name="PointerOver">
-													<Storyboard>
-														<ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root"
-																														Storyboard.TargetProperty="Background">
-															<DiscreteObjectKeyFrame KeyTime="0"
-																											Value="{ThemeResource PivotPreviousButtonBackgroundPointerOver}" />
-														</ObjectAnimationUsingKeyFrames>
-														<ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root"
-																														Storyboard.TargetProperty="BorderBrush">
-															<DiscreteObjectKeyFrame KeyTime="0"
-																											Value="{ThemeResource PivotPreviousButtonBorderBrushPointerOver}" />
-														</ObjectAnimationUsingKeyFrames>
-														<ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow"
-																														Storyboard.TargetProperty="Foreground">
-															<DiscreteObjectKeyFrame KeyTime="0"
-																											Value="{ThemeResource PivotPreviousButtonForegroundPointerOver}" />
-														</ObjectAnimationUsingKeyFrames>
-													</Storyboard>
-												</VisualState>
-												<VisualState x:Name="Pressed">
-													<Storyboard>
-														<ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root"
-																														Storyboard.TargetProperty="Background">
-															<DiscreteObjectKeyFrame KeyTime="0"
-																											Value="{ThemeResource PivotPreviousButtonBackgroundPressed}" />
-														</ObjectAnimationUsingKeyFrames>
-														<ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root"
-																														Storyboard.TargetProperty="BorderBrush">
-															<DiscreteObjectKeyFrame KeyTime="0"
-																											Value="{ThemeResource PivotPreviousButtonBorderBrushPressed}" />
-														</ObjectAnimationUsingKeyFrames>
-														<ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow"
-																														Storyboard.TargetProperty="Foreground">
-															<DiscreteObjectKeyFrame KeyTime="0"
-																											Value="{ThemeResource PivotPreviousButtonForegroundPressed}" />
-														</ObjectAnimationUsingKeyFrames>
-													</Storyboard>
-												</VisualState>
-											</VisualStateGroup>
-										</VisualStateManager.VisualStateGroups>
-										<FontIcon x:Name="Arrow"
-															HorizontalAlignment="Center"
-															VerticalAlignment="Center"
-															Foreground="{ThemeResource PivotPreviousButtonForeground}"
-															FontFamily="{ThemeResource SymbolThemeFontFamily}"
-															FontSize="12"
-															Glyph="&#xE0E2;"
-															MirroredWhenRightToLeft="True"
-															UseLayoutRounding="False" />
-									</Border>
-								</ControlTemplate>
 							</Grid.Resources>
 
 							<ScrollViewer x:Name="ScrollViewer"

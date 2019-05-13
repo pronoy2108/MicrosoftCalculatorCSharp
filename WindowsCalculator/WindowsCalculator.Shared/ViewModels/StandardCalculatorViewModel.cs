@@ -1818,7 +1818,7 @@ namespace CalculatorApp.ViewModel
             ProgModeRadixChange();
         }
 
-        void SetMemorizedNumbersString()
+        public void SetMemorizedNumbersString()
         {
             m_standardCalculatorManager.SetMemorizedNumbersString();
         }

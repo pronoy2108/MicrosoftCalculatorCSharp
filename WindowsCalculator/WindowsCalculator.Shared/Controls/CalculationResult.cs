@@ -157,7 +157,7 @@ namespace CalculatorApp
             static string s_FocusedState = "Focused";
             static string s_UnfocusedState = "Unfocused";
 
-            CalculationResult()
+            public CalculationResult()
             {
                 m_isScalingText = false;
                 m_haveCalculatedMax = false;

@@ -587,7 +587,7 @@ namespace CalculatorApp
             }
         }
 
-        void ToggleMemoryFlyout()
+        void ToggleMemoryFlyout(object sender, object args)
         {
             String viewState = App.GetAppViewState();
             if (viewState != ViewState.DockedView)
@@ -723,7 +723,7 @@ namespace CalculatorApp
             return result;
         }
 
-        void DockPanelTapped(TappedRoutedEventArgs e)
+        void DockPanelTapped(object sender, TappedRoutedEventArgs e)
         {
             int index = DockPivot.SelectedIndex;
             if (index == 1 && !IsProgrammer)

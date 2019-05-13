@@ -187,13 +187,13 @@
 			</Setter>
 		</Style>
 
-		<MenuFlyout x:Key="ProgrammerOperatorsContextMenu"
+		<!--<MenuFlyout x:Key="ProgrammerOperatorsContextMenu"
 								x:Name="ProgrammerOperatorsContextMenu">
 			<MenuFlyoutItem x:Name="CopyMenuItem"
 											x:Uid="CopyMenuItem"
 											Click="OnCopyMenuItemClicked"
 											Icon="Copy" />
-		</MenuFlyout>
+		</MenuFlyout>-->
 	</UserControl.Resources>
 	
 	<Grid x:Name="ProgrammerOperators"
