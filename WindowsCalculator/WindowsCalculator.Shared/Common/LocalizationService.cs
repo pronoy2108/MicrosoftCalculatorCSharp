@@ -182,7 +182,7 @@ namespace CalculatorApp.Common
             return m_overrideFontApiValues;
         }
 
-        FontFamily GetLanguageFontFamilyForType(LanguageFontType fontType)
+        public FontFamily GetLanguageFontFamilyForType(LanguageFontType fontType)
         {
             if (m_overrideFontApiValues)
             {

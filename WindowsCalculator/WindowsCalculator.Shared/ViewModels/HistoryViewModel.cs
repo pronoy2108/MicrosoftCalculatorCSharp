@@ -3,6 +3,7 @@
 namespace CalculatorApp
 {
     using CalculatorApp.Common;
+    using CalculatorApp.Common.Automation;
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;

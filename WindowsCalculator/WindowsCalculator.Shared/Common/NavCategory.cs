@@ -95,13 +95,13 @@ namespace CalculatorApp
                 type = t;
                 headerResourceKey = h;
                 modeResourceKey = n;
-                varmationResourceKey = a;
+                automationResourceKey = a;
             }
 
             public readonly CategoryGroupType type;
             public readonly string headerResourceKey;
             public readonly string modeResourceKey;
-            public readonly string varmationResourceKey;
+            public readonly string automationResourceKey;
         };
 
         [Windows.UI.Xaml.Data.Bindable]
@@ -582,12 +582,12 @@ namespace CalculatorApp
                 return menuOptions;
             }
 
-            NavCategoryGroup CreateCalculatorCategory()
+            static NavCategoryGroup CreateCalculatorCategory()
             {
                 return  new NavCategoryGroup(NavCategory.s_categoryGroupManifest[0].Value);
             }
 
-            NavCategoryGroup CreateConverterCategory()
+            static NavCategoryGroup CreateConverterCategory()
             {
                 return  new NavCategoryGroup(NavCategory.s_categoryGroupManifest[1].Value);
             }

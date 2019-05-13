@@ -5,7 +5,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Automation.Provider;
 
-namespace WindowsCalculator.Shared.Controls
+namespace CalculatorApp
 {
 	sealed class CalculationResultAutomationPeer : FrameworkElementAutomationPeer /* UNO TODO , IInvokeProvider*/
     {

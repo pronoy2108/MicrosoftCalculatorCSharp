@@ -22,7 +22,7 @@ namespace WindowsCalculator.Shared.Controls
 		{
 			string rawValue = null;
 			string radixContent = Content.ToString();
-			LocalizationSettings.GetInstance().RemoveGroupSeparators(radixContent, radixContent.Length, out rawValue);
+			LocalizationSettings.GetInstance().RemoveGroupSeparators(radixContent, radixContent.Length, ref rawValue);
 
 			return rawValue;
 		}
