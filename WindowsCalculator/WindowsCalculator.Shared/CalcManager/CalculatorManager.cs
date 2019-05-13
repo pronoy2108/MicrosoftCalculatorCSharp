@@ -50,13 +50,13 @@ namespace CalculationManager
         void SetExpressionDisplay(
              CalculatorList<(string, int)> tokens,
              CalculatorList<IExpressionCommand> commands);
-        void SetParenthesisNumber( uint  count);
+        void SetParenthesisNumber( int  count);
         void OnNoRightParenAdded();
         void MaxDigitsReached(); // not an error but still need to inform UI layer.
         void BinaryOperatorReceived();
-        void OnHistoryItemAdded( uint  addedItemIndex);
+        void OnHistoryItemAdded( int  addedItemIndex);
         void SetMemorizedNumbers(List<string> memorizedNumbers);
-        void MemoryItemChanged(uint  indexOfMemory);
+        void MemoryItemChanged(int  indexOfMemory);
     }
 
 
@@ -68,13 +68,13 @@ namespace CalculationManager
              CalculatorList<(string, int)> tokens,
              CalculatorList<IExpressionCommand> commands) => throw new NotImplementedException();
         public void SetMemorizedNumbers(List<string> memorizedNumbers) => throw new NotImplementedException();
-        public void OnHistoryItemAdded(uint addedItemIndex) => throw new NotImplementedException();
-        public void SetParenthesisNumber(uint parenthesisCount) => throw new NotImplementedException();
+        public void OnHistoryItemAdded(int addedItemIndex) => throw new NotImplementedException();
+        public void SetParenthesisNumber(int parenthesisCount) => throw new NotImplementedException();
         public void OnNoRightParenAdded() => throw new NotImplementedException();
         public void DisplayPasteError() => throw new NotImplementedException();
         public void MaxDigitsReached() => throw new NotImplementedException();
         public void BinaryOperatorReceived() => throw new NotImplementedException();
-        public void MemoryItemChanged(uint indexOfMemory) => throw new NotImplementedException();
+        public void MemoryItemChanged(int indexOfMemory) => throw new NotImplementedException();
 
         public CalculatorManager(ICalcDisplay displayCallback, IResourceProvider* resourceProvider) => throw new NotImplementedException();
 
@@ -94,24 +94,24 @@ namespace CalculationManager
         public Command SerializeSavedDegreeMode() => throw new NotImplementedException();
 
         public void MemorizeNumber() => throw new NotImplementedException();
-        public void MemorizedNumberLoad(uint value) => throw new NotImplementedException();
-        public void MemorizedNumberAdd(uint value) => throw new NotImplementedException();
-        public void MemorizedNumberSubtract(uint value) => throw new NotImplementedException();
-        public void MemorizedNumberClear(uint value) => throw new NotImplementedException();
+        public void MemorizedNumberLoad(int value) => throw new NotImplementedException();
+        public void MemorizedNumberAdd(int value) => throw new NotImplementedException();
+        public void MemorizedNumberSubtract(int value) => throw new NotImplementedException();
+        public void MemorizedNumberClear(int value) => throw new NotImplementedException();
         public void MemorizedNumberClearAll() => throw new NotImplementedException();
 
         public bool IsEngineRecording() => throw new NotImplementedException();
         public List<char> GetSavedCommands() => throw new NotImplementedException();
         public void SetRadix(RADIX_TYPE iRadixType) => throw new NotImplementedException();
         public void SetMemorizedNumbersString() => throw new NotImplementedException();
-        public string GetResultForRadix(uint radix, int precision) => throw new NotImplementedException();
+        public string GetResultForRadix(int radix, int precision) => throw new NotImplementedException();
         public void SetPrecision(int precision) => throw new NotImplementedException();
         public void UpdateMaxIntDigits() => throw new NotImplementedException();
         public char DecimalSeparator() => throw new NotImplementedException();
 
         public List<HISTORYITEM> GetHistoryItems() => throw new NotImplementedException();
         public List<HISTORYITEM> GetHistoryItems(CalculationManager.CALCULATOR_MODE mode) => throw new NotImplementedException();
-        public HISTORYITEM GetHistoryItem(uint uIdx) => throw new NotImplementedException();
+        public HISTORYITEM GetHistoryItem(int uIdx) => throw new NotImplementedException();
         public bool RemoveHistoryItem(int uIdx) => throw new NotImplementedException();
         public void ClearHistory() => throw new NotImplementedException();
         public int MaxHistorySize() => throw new NotImplementedException();

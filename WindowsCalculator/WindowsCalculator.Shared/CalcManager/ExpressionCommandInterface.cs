@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using CalculatorApp;
+
 namespace CalculationManager
 {
     public class ISerializeCommandVisitor
@@ -25,7 +27,7 @@ namespace CalculationManager
 
     public interface IUnaryCommand : IOperatorCommand
     {
-        const std::shared_ptr<CalculatorVector<int>>& GetCommands();
+        CalculatorList<int> GetCommands();
         void SetCommands(int command1, int command2);
     }
 
@@ -37,7 +39,7 @@ namespace CalculationManager
 
     public interface IOpndCommand : IExpressionCommand
     {
-        const std::shared_ptr<CalculatorVector<int>>& GetCommands();
+        CalculatorList<int> GetCommands();
         void AppendCommand(int command);
         void ToggleSign();
         void RemoveFromEnd();
@@ -45,7 +47,7 @@ namespace CalculationManager
         bool IsSciFmt();
         bool IsDecimalPresent();
         string GetToken(char decimalSymbol);
-        void SetCommands(std::shared_ptr<CalculatorVector<int>> const& commands);
+        void SetCommands(CalculatorList<int> commands);
     }
 
     public interface IParenthesisCommand : IExpressionCommand

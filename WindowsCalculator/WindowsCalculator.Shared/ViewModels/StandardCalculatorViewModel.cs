@@ -30,6 +30,9 @@ namespace CalculatorApp.ViewModel
 {
     public class StandardCalculatorViewModel : INotifyPropertyChanged
     {
+        delegate void HideMemoryClickedHandler();
+        delegate void ProgModeRadixChangeHandler();
+
         const int ASCII_0 = 48;
         const int StandardModePrecision = 16;
         const int ScientificModePrecision = 32;
@@ -57,6 +60,9 @@ namespace CalculatorApp.ViewModel
         const string MemoryItemCleared = "Format_MemorySlotCleared";
         const string MemoryCleared = "Memory_Cleared";
         const string DisplayCopied = "Display_Copied";
+
+        event HideMemoryClickedHandler HideMemoryClicked;
+        event ProgModeRadixChangeHandler ProgModeRadixChange;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -456,6 +462,12 @@ namespace CalculatorApp.ViewModel
                 m_completeTextSelection = value;
             }
         }
+
+        RADIX_TYPE GetCurrentRadixType() => m_CurrentRadixType;
+
+        void UpdateMaxIntDigits() => m_standardCalculatorManager.UpdateMaxIntDigits();
+
+        NumbersAndOperatorsEnum GetCurrentAngleType() => m_CurrentAngleType;
 
         //
         //
@@ -1327,15 +1339,13 @@ namespace CalculatorApp.ViewModel
                 // Handle exponent and exponent sign (...e+... or ...e-...)
                 if (mappedNumOp == NumbersAndOperatorsEnum.Exp)
                 {
-                    ++it;
-                    if (!(MapCharacterToButtonId(*it, canSendNegate) == NumbersAndOperatorsEnum.Add))
+                    it.MoveNext();
+                    if (!(MapCharacterToButtonId(it.Current, canSendNegate) == NumbersAndOperatorsEnum.Add))
                     {
                         Command cmdNegate = ConvertToOperatorsEnum(NumbersAndOperatorsEnum.Negate);
                         m_standardCalculatorManager.SendCommand(cmdNegate);
                     }
                 }
-
-                ++it;
             }
         }
 
@@ -1460,7 +1470,7 @@ namespace CalculatorApp.ViewModel
                 if (LocalizationSettings.GetInstance().IsLocalizedDigit(ch))
                 {
                     mappedValue =
-                        NumbersAndOperatorsEnum.Zero + (NumbersAndOperatorsEnum)(ch - LocalizationSettings.GetInstance().GetDigitSymbolFromEnUsDigit('0'));
+                        NumbersAndOperatorsEnum.Zero + (int)(ch - LocalizationSettings.GetInstance().GetDigitSymbolFromEnUsDigit('0'));
                     canSendNegate = true;
                 }
             }
@@ -1487,18 +1497,18 @@ namespace CalculatorApp.ViewModel
             Announcement = CalculatorAnnouncement.GetMemoryItemAddedAnnouncement(announcement);
         }
 
-        public void OnMemoryItemChanged(uint indexOfMemory)
+        public void OnMemoryItemChanged(int indexOfMemory)
         {
             if (indexOfMemory < MemorizedNumbers.Count)
             {
                 MemoryItemViewModel memSlot = MemorizedNumbers[indexOfMemory];
                 String localizedValue = memSlot.Value;
 
-                string localizedIndex = to_string(indexOfMemory + 1);
+                string localizedIndex = (indexOfMemory + 1).ToString();
                 LocalizationSettings.GetInstance().LocalizeDisplayValue(ref localizedIndex);
 
                 String announcement = LocalizationStringUtil.GetLocalizedNarratorAnnouncement(
-                    MemoryItemChanged, m_localizedMemoryItemChangedAutomationFormat, localizedIndex, localizedValue.Data());
+                    MemoryItemChanged, m_localizedMemoryItemChangedAutomationFormat, localizedIndex, localizedValue);
 
                 Announcement = CalculatorAnnouncement.GetMemoryItemChangedAnnouncement(announcement);
             }
@@ -1510,7 +1520,7 @@ namespace CalculatorApp.ViewModel
             {
                 if (memoryItemPosition is int boxedPosition)
                 {
-                    m_standardCalculatorManager.MemorizedNumberLoad(memoryItemPosition);
+                    m_standardCalculatorManager.MemorizedNumberLoad(boxedPosition);
                     HideMemoryClicked();
                     int windowId = Utils.GetWindowId();
                     //TraceLogger.GetInstance().LogMemoryUsed(windowId, boxedPosition.Value, IsStandard, IsScientific, IsProgrammer, MemorizedNumbers.Size);
@@ -1525,8 +1535,8 @@ namespace CalculatorApp.ViewModel
 
             if (MemorizedNumbers != null)
             {
-                var boxedPosition = safe_cast < Box<int>(memoryItemPosition);
-                if (MemorizedNumbers.Size > 0)
+                var boxedPosition = (int)(memoryItemPosition);
+                if (MemorizedNumbers.Count > 0)
                 {
                     //TraceLogger.GetInstance().LogMemoryUsed(windowId, boxedPosition.Value, IsStandard, IsScientific, IsProgrammer, MemorizedNumbers.Size);
                     //TraceLogger.GetInstance().UpdateMemoryMap(windowId, boxedPosition.Value, IsStandard, IsScientific, IsProgrammer);
@@ -1535,7 +1545,7 @@ namespace CalculatorApp.ViewModel
                 {
                     //TraceLogger.GetInstance().InsertIntoMemoryMap(windowId, IsStandard, IsScientific, IsProgrammer);
                 }
-                m_standardCalculatorManager.MemorizedNumberAdd(boxedPosition.Value);
+                m_standardCalculatorManager.MemorizedNumberAdd(boxedPosition);
             }
         }
 
@@ -1562,23 +1572,23 @@ namespace CalculatorApp.ViewModel
 
         public void OnMemoryClear(object memoryItemPosition)
         {
-            if (MemorizedNumbers && MemorizedNumbers.Size > 0)
+            if (MemorizedNumbers != null && MemorizedNumbers.Count > 0)
             {
                 int windowId = Utils.GetWindowId();
-                var boxedPosition = safe_cast < Box<int>(memoryItemPosition);
+                var boxedPosition = (int)(memoryItemPosition);
 
-                if (boxedPosition.Value >= 0)
+                if (boxedPosition >= 0)
                 {
-                    uint unsignedPosition = uint > (boxedPosition.Value);
+                    int unsignedPosition = boxedPosition;
                     m_standardCalculatorManager.MemorizedNumberClear(unsignedPosition);
 
                     MemorizedNumbers.RemoveAt(unsignedPosition);
-                    for (uint i = 0; i < MemorizedNumbers.Size; i++)
+                    for (uint i = 0; i < MemorizedNumbers.Count; i++)
                     {
-                        MemorizedNumbers.GetAt(i).Position = i;
+                        MemorizedNumbers[i].Position = i;
                     }
 
-                    if (MemorizedNumbers.Size == 0)
+                    if (MemorizedNumbers.Count == 0)
                     {
                         IsMemoryEmpty = true;
                     }
@@ -1586,7 +1596,7 @@ namespace CalculatorApp.ViewModel
                     //TraceLogger.GetInstance().LogMemoryUsed(windowId, boxedPosition.Value, IsStandard, IsScientific, IsProgrammer, MemorizedNumbers.Size);
                     //TraceLogger.GetInstance().DeleteFromMemoryMap(windowId, boxedPosition.Value);
 
-                    string localizedIndex = to_string(boxedPosition.Value + 1);
+                    string localizedIndex = (boxedPosition + 1).ToString();
                     LocalizationSettings.GetInstance().LocalizeDisplayValue(ref localizedIndex);
 
                     String announcement = LocalizationStringUtil.GetLocalizedNarratorAnnouncement(
@@ -1597,7 +1607,7 @@ namespace CalculatorApp.ViewModel
             }
         }
 
-        Array<unsigned char> Serialize()
+        List<char> Serialize()
         {
             //DataWriter writer = new DataWriter();
             //writer.Writeuint((uint)(m_CurrentAngleType));
@@ -1765,9 +1775,9 @@ namespace CalculatorApp.ViewModel
 
         string GetRawDisplayValue()
         {
-            string rawValue;
+            string rawValue = null;
 
-            LocalizationSettings.GetInstance().RemoveGroupSeparators(DisplayValue.Data(), DisplayValue.Length(), &rawValue);
+            LocalizationSettings.GetInstance().RemoveGroupSeparators(DisplayValue, DisplayValue.Length, ref rawValue);
 
             return rawValue;
         }
@@ -1777,7 +1787,7 @@ namespace CalculatorApp.ViewModel
         //     'displayValue' is a localized string containing a numerical value to be displayed to the user.
         String GetLocalizedStringFormat(String format, String displayValue)
         {
-            String localizedString = new String(LocalizationStringUtil.GetLocalizedString(format.Data(), displayValue.Data()));
+            String localizedString = new String(LocalizationStringUtil.GetLocalizedString(format, displayValue));
             return localizedString;
         }
 
@@ -1936,7 +1946,7 @@ namespace CalculatorApp.ViewModel
             }
         }
 
-        void Recalculate(bool fromHistory)
+        void Recalculate(bool fromHistory = false)
         {
             // Recalculate
             Command currentDegreeMode = m_standardCalculatorManager.GetCurrentDegreeMode();
@@ -1957,7 +1967,7 @@ namespace CalculatorApp.ViewModel
                 {
                     IUnaryCommand spCommand = (IUnaryCommand)(command);
                     CalculatorList<int> unaryCommands = spCommand.GetCommands();
-                    uint unaryCommandCount;
+                    int unaryCommandCount;
                     unaryCommands.GetSize(out unaryCommandCount);
 
                     int nUCode;
@@ -2217,10 +2227,10 @@ namespace CalculatorApp.ViewModel
             var localizer = LocalizationSettings.GetInstance();
             binaryDisplayString = AddPadding(binaryDisplayString);
 
-            localizer.LocalizeDisplayValue(hexDisplayString);
-            localizer.LocalizeDisplayValue(decimalDisplayString);
-            localizer.LocalizeDisplayValue(octalDisplayString);
-            localizer.LocalizeDisplayValue(binaryDisplayString);
+            localizer.LocalizeDisplayValue(ref hexDisplayString);
+            localizer.LocalizeDisplayValue(ref decimalDisplayString);
+            localizer.LocalizeDisplayValue(ref octalDisplayString);
+            localizer.LocalizeDisplayValue(ref binaryDisplayString);
 
             HexDisplayValue = Utils.LRO + hexDisplayString + Utils.PDF;
             DecimalDisplayValue = Utils.LRO + decimalDisplayString + Utils.PDF;
@@ -2263,7 +2273,7 @@ namespace CalculatorApp.ViewModel
             (string, int) p;
             m_tokens.GetAt(pos, out p);
 
-            String englishString = LocalizationSettings.GetInstance().GetEnglishValueFromLocalizedDigits(text.Data());
+            String englishString = LocalizationSettings.GetInstance().GetEnglishValueFromLocalizedDigits(text);
             p.Item1 = englishString;
 
             int commandPos = p.Item2;

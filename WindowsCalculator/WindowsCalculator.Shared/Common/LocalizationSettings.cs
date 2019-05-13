@@ -172,7 +172,7 @@ namespace CalculatorApp
                 stringToLocalize = b.ToString();
             }
 
-            string GetEnglishValueFromLocalizedDigits(string localizedString)
+            public string GetEnglishValueFromLocalizedDigits(string localizedString)
             {
                 if (m_resolvedName == "en-US")
                 {
@@ -209,7 +209,7 @@ namespace CalculatorApp
                 return new string(englishString);
             }
 
-            bool IsEnUsDigit(char digit)
+            public bool IsEnUsDigit(char digit)
             {
                 if (digit >= '0' && digit <= '9')
                 {
@@ -218,7 +218,7 @@ namespace CalculatorApp
                 return false;
             }
 
-            bool IsLocalizedDigit(char digit)
+            public bool IsLocalizedDigit(char digit)
             {
                 foreach(var dig in m_digitSymbols)
                 {
@@ -230,7 +230,7 @@ namespace CalculatorApp
                 return false;
             }
 
-            bool IsLocalizedHexDigit(char digit)
+            public bool IsLocalizedHexDigit(char digit)
             {
                 if (IsLocalizedDigit(digit))
                 {
@@ -248,14 +248,14 @@ namespace CalculatorApp
                 return false;
             }
 
-            char GetDigitSymbolFromEnUsDigit(char digitSymbol)
+            public char GetDigitSymbolFromEnUsDigit(char digitSymbol)
             {
                 Debug.Assert(digitSymbol >= '0' && digitSymbol <= '9');
                 int digit = digitSymbol - '0';
                 return m_digitSymbols[digit]; // throws on out of range
             }
 
-            char GetDecimalSeparator()
+            public char GetDecimalSeparator()
             {
                 return m_decimalSeparator;
             }
@@ -280,7 +280,7 @@ namespace CalculatorApp
                 return m_numberGrouping;
             }
 
-            void RemoveGroupSeparators(string value, int length, ref string rawValue)
+            public void RemoveGroupSeparators(string value, int length, ref string rawValue)
             {
                 StringBuilder b = new StringBuilder(length);
 
@@ -295,12 +295,12 @@ namespace CalculatorApp
                 rawValue = b.ToString();
             }
 
-            string GetCalendarIdentifier()
+            public string GetCalendarIdentifier()
             {
                 return m_calendarIdentifier;
             }
 
-            string GetListSeparator()
+            public string GetListSeparator()
             {
                 return m_listSeparator;
             }
@@ -310,7 +310,7 @@ namespace CalculatorApp
                 return m_firstDayOfWeek;
             }
 
-            int GetCurrencyTrailingDigits()
+            public int GetCurrencyTrailingDigits()
             {
                 return m_currencyTrailingDigits;
             }
@@ -320,7 +320,7 @@ namespace CalculatorApp
                 return m_currencySymbolPrecedence;
             }
 
-            static string GetCalendarIdentifierFromCalid(int calId)
+            public static string GetCalendarIdentifierFromCalid(int calId)
             {
                 switch (calId)
                 {
