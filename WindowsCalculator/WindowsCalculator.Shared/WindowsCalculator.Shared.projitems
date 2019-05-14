@@ -6,7 +6,7 @@
     <SharedGUID>6279c845-92f8-4333-ab99-3d213163593c</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>WindowsCalculator.Shared</Import_RootNamespace>
+    <Import_RootNamespace>CalculatorApp</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <ApplicationDefinition Include="$(MSBuildThisFileDirectory)App.xaml">
@@ -38,6 +38,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\CalculatorButtonUser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\CalculatorDisplay.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\CopyPasteManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\DelegateCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\DisplayExpressionToken.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\EngineResourceProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\LocalizationService.cs" />

@@ -11,7 +11,6 @@ namespace CalculatorApp
     using System.Diagnostics;
     using System.Linq;
     using System.Windows.Input;
-    using Uno.UI.Common;
     using Windows.Storage;
     using CM = CalculationManager;
 
@@ -63,8 +62,8 @@ namespace CalculatorApp
 
             public HistoryViewModel(CalculationManager.CalculatorManager calculatorManager)
             { 
-                HideCommand = new DelegateCommand<object>(OnHideCommand);
-                ClearCommand  = new DelegateCommand<object>(OnClearCommand);
+                HideCommand = new DelegateCommand(OnHideCommand);
+                ClearCommand  = new DelegateCommand(OnClearCommand);
 
             m_calculatorManager = calculatorManager;
                 m_localizedHistoryCleared = null;

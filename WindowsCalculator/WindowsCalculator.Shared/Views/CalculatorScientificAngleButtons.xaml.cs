@@ -13,8 +13,8 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using CalculatorApp.ViewModel;
-
-// The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
+using System.Windows.Input;
+using CalculatorApp.Common;
 
 namespace CalculatorApp
 {
@@ -24,9 +24,13 @@ namespace CalculatorApp
 
         public StandardCalculatorViewModel Model => (StandardCalculatorViewModel)(DataContext);
 
+        public ICommand ButtonPressed;
+
+
         public CalculatorScientificAngleButtons()
         {
             this.InitializeComponent();
+            ButtonPressed = new DelegateCommand(OnAngleButtonPressed);
             m_isErrorVisualState = false;
         }
 

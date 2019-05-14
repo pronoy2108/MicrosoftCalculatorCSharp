@@ -9,9 +9,9 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
-namespace CalculatorApp
+namespace CalculatorApp.Controls
 {
-	class CalculatorButton : Button
+	public class CalculatorButton : Button
 	{
 		public CalculatorButton()
 		{

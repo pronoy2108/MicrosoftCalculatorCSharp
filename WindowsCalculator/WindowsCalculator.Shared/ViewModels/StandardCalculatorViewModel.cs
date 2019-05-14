@@ -20,11 +20,9 @@ using System.Windows.Input;
 using System.Collections.Generic;
 using static CalculationManager.CCommand;
 using System.Text;
-using Uno.Extensions;
 using System.Linq;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using Uno.UI.Common;
 
 namespace CalculatorApp.ViewModel
 {
@@ -545,13 +543,13 @@ namespace CalculatorApp.ViewModel
             m_localizedOpenParenthesisCountChangedAutomationFormat = null;
             m_localizedNoRightParenthesisAddedFormat = null;
 
-            CopyCommand = new DelegateCommand<object>(OnCopyCommand);
-            PasteCommand = new DelegateCommand<object>(OnPasteCommand);
-            ButtonPressed = new DelegateCommand<object>(OnButtonPressed);
-            ClearMemoryCommand = new DelegateCommand<object>(OnClearMemoryCommand);
-            MemoryItemPressed = new DelegateCommand<object>(OnMemoryItemPressed);
-            MemoryAdd = new DelegateCommand<object>(OnMemoryAdd);
-            MemorySubtract = new DelegateCommand<object>(OnMemorySubtract);
+            CopyCommand = new DelegateCommand(OnCopyCommand);
+            PasteCommand = new DelegateCommand(OnPasteCommand);
+            ButtonPressed = new DelegateCommand(OnButtonPressed);
+            ClearMemoryCommand = new DelegateCommand(OnClearMemoryCommand);
+            MemoryItemPressed = new DelegateCommand(OnMemoryItemPressed);
+            MemoryAdd = new DelegateCommand(OnMemoryAdd);
+            MemorySubtract = new DelegateCommand(OnMemorySubtract);
 
             m_calculatorDisplay.SetCallback(new WeakReference(this));
             m_expressionAutomationNameFormat = AppResourceProvider.GetInstance().GetResourceString(CalculatorExpression);
@@ -1278,7 +1276,7 @@ namespace CalculatorApp.ViewModel
 
                     // Closing parenthesis pops the negation state off the stack and sends it down to the calc engine
                     case NumbersAndOperatorsEnum.CloseParenthesis:
-                        if (!negateStack.Empty())
+                        if (negateStack.Any())
                         {
                             sendNegate = negateStack.Last();
                             negateStack.RemoveAt(negateStack.Count - 1);

@@ -12,7 +12,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
-namespace WindowsCalculator.Shared.Controls
+namespace CalculatorApp.Controls
 {
 	sealed class OverflowTextBlockAutomationPeer : FrameworkElementAutomationPeer
 	{

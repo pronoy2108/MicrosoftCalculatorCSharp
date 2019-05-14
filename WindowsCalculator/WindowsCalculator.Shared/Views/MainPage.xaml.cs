@@ -4,6 +4,7 @@ using CalculatorApp.Converters;
 using CalculatorApp.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -47,7 +48,7 @@ namespace CalculatorApp
         CalculatorApp.DateCalculator m_dateCalculator;
         CalculatorApp.ViewModel.ApplicationViewModel m_model;
 
-        ApplicationViewModel Model => m_model;
+        public ApplicationViewModel Model => m_model;
 
         public MainPage()
         {
@@ -421,7 +422,7 @@ namespace CalculatorApp
             }
         }
 
-        List<object> CreateUIElementsForCategories(IObservableVector<NavCategoryGroup> categories)
+        public List<object> CreateUIElementsForCategories(ObservableCollection<NavCategoryGroup> categories)
         {
             var menuCategories = new List<object>();
 
@@ -456,13 +457,13 @@ namespace CalculatorApp
             item.DataContext = category;
 
             var icon = new FontIcon();
-            icon.FontFamily = (Windows.UI.Xaml.Media.FontFamily)(App.Current.Resources.Lookup("CalculatorFontFamily"));
+            icon.FontFamily = (Windows.UI.Xaml.Media.FontFamily)(App.Current.Resources["CalculatorFontFamily"]);
             icon.Glyph = category.Glyph;
             item.Icon = icon;
 
             item.Content = category.Name;
             item.AccessKey = category.AccessKey;
-            item.Style = (Windows.UI.Xaml.Style)(Resources.Lookup("NavViewItemStyle"));
+            item.Style = (Windows.UI.Xaml.Style)(Resources["NavViewItemStyle"]);
 
             AutomationProperties.SetName(item, category.AutomationName);
             AutomationProperties.SetAutomationId(item, category.AutomationId);

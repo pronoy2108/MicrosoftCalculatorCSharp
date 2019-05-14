@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Uno.UI.Converters;
+using Windows.UI.Xaml.Data;
 
 namespace CalculatorApp.Converters
 {
-	class BooleanNegationConverter : ConverterBase
+	class BooleanNegationConverter : IValueConverter
 	{
-		protected override object Convert(object value, Type targetType, object parameter)
+		public object Convert(object value, Type targetType, object parameter, string culture)
 		{
 			bool? boxedBool = value as bool?;
 
@@ -21,7 +21,7 @@ namespace CalculatorApp.Converters
 			}
 		}
 
-		protected override object ConvertBack(object value, Type targetType, object parameter)
+        public object ConvertBack(object value, Type targetType, object parameter, string culture)
 		{
 			return value;
 		}

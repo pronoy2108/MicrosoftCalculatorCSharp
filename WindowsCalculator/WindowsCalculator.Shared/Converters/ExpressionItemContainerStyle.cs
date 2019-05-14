@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Uno.UI.Converters;
 
 namespace CalculatorApp.Converters
 {

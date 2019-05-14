@@ -9,7 +9,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
 
-namespace WindowsCalculator.Shared.Controls
+namespace CalculatorApp.Controls
 {
 	class OperandTextBox : TextBox
 	{

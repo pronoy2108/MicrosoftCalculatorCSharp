@@ -15,7 +15,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
-namespace WindowsCalculator.Shared.Controls
+namespace CalculatorApp.Controls
 {
     public class OverflowTextBlock : Control
     {
@@ -120,7 +120,7 @@ namespace WindowsCalculator.Shared.Controls
                 m_expressionContainer.UpdateLayout();
                 m_expressionContainer.ChangeView(m_expressionContainer.ScrollableWidth, null, null, true);
             }
-            var newIsAccessibilityViewControl = m_itemsControl != null && m_itemsControl.Items.Size > 0;
+            var newIsAccessibilityViewControl = m_itemsControl != null && m_itemsControl.Items.Count > 0;
             if (m_isAccessibilityViewControl != newIsAccessibilityViewControl)
             {
                 m_isAccessibilityViewControl = newIsAccessibilityViewControl;

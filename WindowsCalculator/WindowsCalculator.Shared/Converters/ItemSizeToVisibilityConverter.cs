@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Uno.UI.Converters;
 using Windows.UI.Xaml.Interop;
 using Windows.Foundation.Metadata;
 using Windows.UI.Xaml.Data;

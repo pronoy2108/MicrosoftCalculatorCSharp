@@ -1,6 +1,6 @@
 using CalculationManager;
 using CalculatorApp;
-using CalculatorApp.Conrols;
+using CalculatorApp.Controls;
 using CalculatorApp.ViewModel;
 using System;
 using System.Collections.Generic;
@@ -22,7 +22,7 @@ using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace WindowsCalculator.Shared.Views
+namespace CalculatorApp
 {
     public sealed partial class CalculatorProgrammerOperators : UserControl
     {

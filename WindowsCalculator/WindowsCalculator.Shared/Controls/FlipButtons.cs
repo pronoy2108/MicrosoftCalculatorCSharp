@@ -9,9 +9,9 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
-namespace CalculatorApp
+namespace CalculatorApp.Controls
 {
-	class FlipButtons : ToggleButton
+	public class FlipButtons : ToggleButton
 	{
 
 		// NumbersAndOperatorsEnum

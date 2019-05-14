@@ -1,4 +1,5 @@
 using CalculatorApp;
+using CalculatorApp.Common;
 using CalculatorApp.ViewModel;
 using System;
 using System.Collections.Generic;
@@ -6,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Windows.Input;
-using Uno.UI.Common;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.ViewManagement;
@@ -34,7 +34,7 @@ namespace CalculatorApp
         {
             this.InitializeComponent();
             m_isErrorVisualState = false;
-            BitLengthButtonPressed = new DelegateCommand<object>(OnBitLengthButtonPressed);
+            BitLengthButtonPressed = new DelegateCommand(OnBitLengthButtonPressed);
         }
 
         void ShowBitFlip(object sender, RoutedEventArgs e)

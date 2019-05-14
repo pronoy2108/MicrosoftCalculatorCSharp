@@ -9,7 +9,7 @@ namespace CalculatorApp
 {
 	sealed class CalculationResultAutomationPeer : FrameworkElementAutomationPeer /* UNO TODO , IInvokeProvider*/
     {
-        public CalculationResultAutomationPeer(FrameworkElement owner)
+        public CalculationResultAutomationPeer(FrameworkElement owner) : base(owner)
 		{
 
 		}

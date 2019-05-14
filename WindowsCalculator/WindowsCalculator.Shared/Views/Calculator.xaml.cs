@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.RegularExpressions;
+using System.Windows.Input;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Globalization.NumberFormatting;
@@ -83,6 +84,8 @@ namespace CalculatorApp
         string m_openHistoryFlyoutAutomationName;
         string m_closeHistoryFlyoutAutomationName;
 
+        public ICommand HistoryButtonPressed;
+
         Windows.UI.Xaml.Controls.PivotItem m_pivotItem;
         bool m_IsDigit = false;
         Memory m_memory;
@@ -95,6 +98,7 @@ namespace CalculatorApp
             m_isLastAnimatedInScientific = false;
             m_isLastAnimatedInProgrammer = false;
             m_resultAnimate = false;
+            HistoryButtonPressed = new DelegateCommand(ToggleHistoryFlyout);
 
             SetFontSizeResources();
             LoadResourceStrings();
@@ -104,7 +108,7 @@ namespace CalculatorApp
                 HistoryButton.HorizontalAlignment = HorizontalAlignment.Left;
             }
 
-            m_displayFlyout = (MenuFlyout)(Resources.Lookup("DisplayContextMenu"));
+            m_displayFlyout = (MenuFlyout)(Resources["DisplayContextMenu"]);
             var resLoader = AppResourceProvider.GetInstance();
 
             // UNO TODO
@@ -155,13 +159,13 @@ namespace CalculatorApp
             FontTable currentItem = fontTables.First(f => f.numericSystem == formatter.NumeralSystem);
 #endif
 
-            this.Resources.Insert(("ResultFullFontSize"), currentItem.fullFont);
-            this.Resources.Insert(("ResultFullMinFontSize"), currentItem.fullFontMin);
-            this.Resources.Insert(("ResultPortraitMinFontSize"), currentItem.portraitMin);
-            this.Resources.Insert(("ResultSnapFontSize"), currentItem.snapFont);
-            this.Resources.Insert(("CalcButtonCaptionSizeOverride"), currentItem.fullNumPadFont);
-            this.Resources.Insert(("CalcButtonScientificSnapCaptionSizeOverride"), currentItem.snapScientificNumPadFont);
-            this.Resources.Insert(("CalcButtonScientificPortraitCaptionSizeOverride"), currentItem.portraitScientificNumPadFont);
+            this.Resources.Add(("ResultFullFontSize"), currentItem.fullFont);
+            this.Resources.Add(("ResultFullMinFontSize"), currentItem.fullFontMin);
+            this.Resources.Add(("ResultPortraitMinFontSize"), currentItem.portraitMin);
+            this.Resources.Add(("ResultSnapFontSize"), currentItem.snapFont);
+            this.Resources.Add(("CalcButtonCaptionSizeOverride"), currentItem.fullNumPadFont);
+            this.Resources.Add(("CalcButtonScientificSnapCaptionSizeOverride"), currentItem.snapScientificNumPadFont);
+            this.Resources.Add(("CalcButtonScientificPortraitCaptionSizeOverride"), currentItem.portraitScientificNumPadFont);
         }
 
         void OnLoaded(object sender, RoutedEventArgs args)
@@ -321,7 +325,7 @@ namespace CalculatorApp
             }
             else
             {
-                if (m_pivotItem != null && DockPivot.Items.Size == 1)
+                if (m_pivotItem != null && DockPivot.Items.Count == 1)
                 {
                     DockPivot.Items.Insert(0, m_pivotItem);
                 }

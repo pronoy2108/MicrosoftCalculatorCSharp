@@ -18,7 +18,6 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using System.ComponentModel;
 using System.Windows.Input;
-using Uno.UI.Common;
 using System;
 using System.Diagnostics;
 using System.Collections.ObjectModel;
@@ -68,8 +67,8 @@ namespace CalculatorApp.ViewModel
 
         public ApplicationViewModel()
         {
-            CopyCommand = new DelegateCommand<object>(OnCopyCommand);
-            PasteCommand  = new DelegateCommand<object>(OnPasteCommand);
+            CopyCommand = new DelegateCommand(OnCopyCommand);
+            PasteCommand  = new DelegateCommand(OnPasteCommand);
 
             SetMenuCategories();
         }
@@ -91,6 +90,7 @@ namespace CalculatorApp.ViewModel
 
         public ObservableCollection<NavCategoryGroup> Categories
         {
+            get => m_categories;
             set
             {
                 if (m_categories != value)
