@@ -1,5 +1,6 @@
 ﻿<UserControl x:Class="CalculatorApp.Calculator"
 							xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+							xmlns:win="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 							xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 							xmlns:automation="using:CalculatorApp.Common.Automation"
 							xmlns:common="using:CalculatorApp.Common"
@@ -576,20 +577,19 @@
 		<!-- Used by hidden shortcut buttons -->
 		<x:Int32 x:Key="Zero">0</x:Int32>
 
-		<!--
-    UNO TODO
-    <MenuFlyout x:Key="DisplayContextMenu">
-			<MenuFlyoutItem x:Name="CopyMenuItem"
+        <!-- UNO TODO Moved styles from inner -->
+        <MenuFlyout x:Key="DisplayContextMenu">
+            <win:MenuFlyoutItem x:Name="CopyMenuItem"
 											x:Uid="CopyMenuItem"
 											Command="{x:Bind Model.CopyCommand}"
 											Icon="Copy" />
-			<MenuFlyoutItem x:Name="PasteMenuItem"
+            <win:MenuFlyoutItem x:Name="PasteMenuItem"
 											x:Uid="PasteMenuItem"
 											Command="{x:Bind Model.PasteCommand}"
 											Icon="Paste" />
-		</MenuFlyout>-->
+        </MenuFlyout>
 
-    <!-- UNO TODO Moved styles from inner -->
+        <!-- UNO TODO Moved styles from inner -->
     <Style x:Key="BaseContentControlStyle"
         TargetType="ContentControl">
       <Setter Property="FontFamily"

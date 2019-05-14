@@ -14,7 +14,7 @@ namespace CalculatorApp
         private WeakReference m_historyCallbackReference;
 
 
-        CalculatorDisplay()
+        public CalculatorDisplay()
         {
         }
 

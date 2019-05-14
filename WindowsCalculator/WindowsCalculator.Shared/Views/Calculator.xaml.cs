@@ -151,7 +151,7 @@ namespace CalculatorApp
 
         void SetFontSizeResources()
         {
-#if HAS_UNO
+#if true // HAS_UNO
             FontTable currentItem = fontTables.First(f => f.numericSystem == "Default");
 #else
             DecimalFormatter formatter = LocalizationService.GetRegionalSettingsAwareDecimalFormatter();

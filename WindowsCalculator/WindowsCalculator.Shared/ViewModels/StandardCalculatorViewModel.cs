@@ -515,7 +515,7 @@ namespace CalculatorApp.ViewModel
             m_HexDisplayValue = "0";
             m_BinaryDisplayValue = "0";
             m_OctalDisplayValue = "0";
-            m_standardCalculatorManager = new CalculatorManager(m_calculatorDisplay, m_resourceProvider);
+            m_standardCalculatorManager = new CalculatorManager(ref m_calculatorDisplay, ref m_resourceProvider);
             m_ExpressionTokens = new ObservableCollection<DisplayExpressionToken>();
             m_MemorizedNumbers = new List<MemoryItemViewModel>();
             m_IsMemoryEmpty = true;
@@ -1795,7 +1795,7 @@ namespace CalculatorApp.ViewModel
             AreHEXButtonsEnabled = false;
             CurrentRadixType = RADIX_TYPE.DEC_RADIX;
             m_standardCalculatorManager.SetRadix(RADIX_TYPE.DEC_RADIX);
-            ProgModeRadixChange();
+            ProgModeRadixChange?.Invoke();
         }
 
         void SetPrecision(int precision)
@@ -1813,7 +1813,7 @@ namespace CalculatorApp.ViewModel
             AreHEXButtonsEnabled = (radixType == RADIX_TYPE.HEX_RADIX);
             CurrentRadixType = radixType;
             m_standardCalculatorManager.SetRadix(radixType);
-            ProgModeRadixChange();
+            ProgModeRadixChange?.Invoke();
         }
 
         public void SetMemorizedNumbersString()

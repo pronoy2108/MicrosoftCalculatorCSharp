@@ -62,7 +62,7 @@ namespace CalculatorApp.ViewModel
 
 
 
-        ViewMode m_mode;
+        ViewMode m_mode = ViewMode.None;
         ObservableCollection<NavCategoryGroup> m_categories;
 
         public ApplicationViewModel()
@@ -183,7 +183,7 @@ namespace CalculatorApp.ViewModel
             //
             // Save the changed mode, so that the new window launches in this mode.
             // Don't save until after we have adjusted to the new mode, so we don't save a mode that fails to load.
-            ApplicationData.Current.LocalSettings.Values.Add(nameof(Mode), NavCategory.Serialize(m_mode));
+            ApplicationData.Current.LocalSettings.Values[nameof(Mode)] = NavCategory.Serialize(m_mode);
 
             // TraceLogger.GetInstance().LogModeChangeEnd(m_mode, ApplicationView.GetApplicationViewIdForWindow(CoreWindow.GetForCurrentThread()));
             RaisePropertyChanged(ClearMemoryVisibilityPropertyName);

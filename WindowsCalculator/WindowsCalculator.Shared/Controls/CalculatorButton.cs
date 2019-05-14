@@ -30,7 +30,18 @@ namespace CalculatorApp.Controls
 		}
 
 		public static readonly DependencyProperty ButtonIdProperty =
-			DependencyProperty.Register("ButtonId", typeof(NumbersAndOperatorsEnum), typeof(CalculatorButton), new PropertyMetadata(null));
+			DependencyProperty.Register(
+                "ButtonId",
+                typeof(NumbersAndOperatorsEnum), 
+                typeof(CalculatorButton),
+                new PropertyMetadata(
+                    null, 
+                    (s, e) => (s as CalculatorButton)?.OnButtonIdPropertyChanged(
+                        (NumbersAndOperatorsEnum)(e.OldValue ?? NumbersAndOperatorsEnum.None),
+                        (NumbersAndOperatorsEnum)(e.NewValue ?? NumbersAndOperatorsEnum.None)
+                    )
+                )
+            );
 
 		// AuditoryFeedback
 		public string AuditoryFeedback

@@ -19,7 +19,7 @@ namespace CalculatorApp
     };
 
 
-    class EngineResourceProvider : IResourceProvider
+    public class EngineResourceProvider : IResourceProvider
     {
         public EngineResourceProvider()
         {

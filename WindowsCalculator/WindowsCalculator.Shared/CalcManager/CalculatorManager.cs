@@ -3,6 +3,7 @@
 using CalculatorApp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace CalculationManager
@@ -76,13 +77,21 @@ namespace CalculationManager
         public void BinaryOperatorReceived() => throw new NotImplementedException();
         public void MemoryItemChanged(int indexOfMemory) => throw new NotImplementedException();
 
-        public CalculatorManager(ICalcDisplay displayCallback, IResourceProvider resourceProvider) => throw new NotImplementedException();
+        public CalculatorManager(ref CalculatorDisplay displayCallback, ref EngineResourceProvider resourceProvider)
+        {
+            Debug.WriteLine($"new CalculatorManager");
+            displayCallback = new CalculatorDisplay();
+            resourceProvider = new EngineResourceProvider();
+        }
 
         public void Reset(bool clearMemory = true) => throw new NotImplementedException();
         public void SetStandardMode() => throw new NotImplementedException();
         public void SetScientificMode() => throw new NotImplementedException();
         public void SetProgrammerMode() => throw new NotImplementedException();
-        public void SendCommand(Command command) => throw new NotImplementedException();
+        public void SendCommand(Command command)
+        {
+            Debug.WriteLine($"CalculatorManager.SendCommand({command})");
+        }
         public List<char> SerializeCommands() => throw new NotImplementedException();
         public void DeSerializeCommands(List<char> serializedData) => throw new NotImplementedException();
         public void SerializeMemory() => throw new NotImplementedException();
@@ -94,23 +103,54 @@ namespace CalculationManager
         public Command SerializeSavedDegreeMode() => throw new NotImplementedException();
 
         public void MemorizeNumber() => throw new NotImplementedException();
-        public void MemorizedNumberLoad(int value) => throw new NotImplementedException();
-        public void MemorizedNumberAdd(int value) => throw new NotImplementedException();
-        public void MemorizedNumberSubtract(int value) => throw new NotImplementedException();
-        public void MemorizedNumberClear(int value) => throw new NotImplementedException();
-        public void MemorizedNumberClearAll() => throw new NotImplementedException();
+        public void MemorizedNumberLoad(int value)
+        {
+            Debug.WriteLine($"CalculatorManager.MemorizedNumberLoad({value})");
+        }
+        public void MemorizedNumberAdd(int value)
+        {
+            Debug.WriteLine($"CalculatorManager.MemorizedNumberAdd({value})");
+        }
+        public void MemorizedNumberSubtract(int value)
+        {
+            Debug.WriteLine($"CalculatorManager.MemorizedNumberSubtract({value})");
+        }
+        public void MemorizedNumberClear(int value)
+        {
+            Debug.WriteLine($"CalculatorManager.MemorizedNumberClear({value})");
+        }
+        public void MemorizedNumberClearAll()
+        {
+            Debug.WriteLine($"CalculatorManager.MemorizedNumberClearAll()");
+        }
 
         public bool IsEngineRecording() => throw new NotImplementedException();
         public List<char> GetSavedCommands() => throw new NotImplementedException();
-        public void SetRadix(RADIX_TYPE iRadixType) => throw new NotImplementedException();
+        public void SetRadix(RADIX_TYPE iRadixType)
+        {
+            Debug.WriteLine($"CalculatorManager.SetRadix({iRadixType})");
+        }
         public void SetMemorizedNumbersString() => throw new NotImplementedException();
         public string GetResultForRadix(int radix, int precision) => throw new NotImplementedException();
-        public void SetPrecision(int precision) => throw new NotImplementedException();
-        public void UpdateMaxIntDigits() => throw new NotImplementedException();
+        public void SetPrecision(int precision)
+        {
+            Debug.WriteLine($"CalculatorManager.SetPrecision({precision})");
+        }
+        public void UpdateMaxIntDigits()
+        {
+            Debug.WriteLine($"CalculatorManager.UpdateMaxIntDigits()");
+        }
         public char DecimalSeparator() => throw new NotImplementedException();
 
         public List<HISTORYITEM> GetHistoryItems() => throw new NotImplementedException();
-        public List<HISTORYITEM> GetHistoryItems(CalculationManager.CALCULATOR_MODE mode) => throw new NotImplementedException();
+
+        public List<HISTORYITEM> GetHistoryItems(CalculationManager.CALCULATOR_MODE mode)
+        {
+            Debug.WriteLine($"CalculatorManager.GetHistoryItems({mode})");
+
+            return new List<HISTORYITEM>();
+        }
+
         public HISTORYITEM GetHistoryItem(int uIdx) => throw new NotImplementedException();
         public bool RemoveHistoryItem(int uIdx) => throw new NotImplementedException();
         public void ClearHistory() => throw new NotImplementedException();

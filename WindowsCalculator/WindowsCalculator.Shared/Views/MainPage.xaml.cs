@@ -73,7 +73,7 @@ namespace CalculatorApp
         }
 
 
-        void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             if (m_model.CalculatorViewModel != null)
             {
@@ -86,7 +86,10 @@ namespace CalculatorApp
                 String stringParameter = (String)(e.Parameter);
                 if (stringParameter != null)
                 {
-                    initialMode = (ViewMode)int.Parse(stringParameter);
+                    if (int.TryParse(stringParameter, out var intParameter))
+                    {
+                        initialMode = (ViewMode)intParameter;
+                    }
                 }
             }
             else
@@ -289,8 +292,10 @@ namespace CalculatorApp
                 isProgramerBinding.Path = new PropertyPath("IsProgrammer");
                 m_calculator.SetBinding(CalculatorApp.Calculator.IsProgrammerProperty, isProgramerBinding);
 
+#if NETFX_CORE
                 // UNO TODO
-                // m_calculator.Style = CalculatorBaseStyle;
+                m_calculator.Style = CalculatorBaseStyle;
+#endif
 
                 CalcHolder.Child = m_calculator;
 

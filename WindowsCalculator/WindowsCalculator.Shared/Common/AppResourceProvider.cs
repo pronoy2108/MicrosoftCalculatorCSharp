@@ -11,7 +11,7 @@ namespace CalculatorApp
         Windows.ApplicationModel.Resources.ResourceLoader m_cEnginestringResLoader;
         private static AppResourceProvider s_instance;
 
-        AppResourceProvider()
+        public AppResourceProvider()
         {
             m_stringResLoader = ResourceLoader.GetForViewIndependentUse();
             m_cEnginestringResLoader = ResourceLoader.GetForViewIndependentUse("CEnginestrings");

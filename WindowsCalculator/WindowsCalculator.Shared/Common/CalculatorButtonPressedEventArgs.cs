@@ -18,8 +18,7 @@ namespace CalculatorApp
 
             static public NumbersAndOperatorsEnum GetOperationFromCommandParameter(object commandParameter)
             {
-                var eventArgs = (CalculatorButtonPressedEventArgs)(commandParameter);
-                if (eventArgs != null)
+                if (commandParameter is CalculatorButtonPressedEventArgs eventArgs)
                 {
                     return eventArgs.Operation;
                 }
@@ -31,8 +30,7 @@ namespace CalculatorApp
 
             static public string GetAuditoryFeedbackFromCommandParameter(object commandParameter)
             {
-                var eventArgs = (CalculatorButtonPressedEventArgs)(commandParameter);
-                if (eventArgs != null)
+                if (commandParameter is CalculatorButtonPressedEventArgs eventArgs)
                 {
                     return eventArgs.AuditoryFeedback;
                 }

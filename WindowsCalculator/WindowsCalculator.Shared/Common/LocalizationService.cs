@@ -430,7 +430,7 @@ namespace CalculatorApp.Common
 
         static IEnumerable<String> GetLanguageIdentifiers()
         {
-            // UNO TODO
+#if !HAS_UNO
             //char currentLocale[LOCALE_NAME_MAX_LENGTH] = {};
             //int result = GetUserDefaultLocaleName(currentLocale, LOCALE_NAME_MAX_LENGTH);
             //if (result != 0)
@@ -457,8 +457,10 @@ namespace CalculatorApp.Common
             //}
 
             //return null;
-
             yield break;
+#else
+            yield break;
+#endif
         }
 
         // Resources for the engine use numbers as keys. It's inconvenient, but also difficult to
