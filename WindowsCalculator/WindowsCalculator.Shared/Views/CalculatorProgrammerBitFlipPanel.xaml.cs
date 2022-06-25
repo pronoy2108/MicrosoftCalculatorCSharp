@@ -1,68 +1,63 @@
-using CalculatorApp.Common;
-using CalculatorApp.Controls;
-using CalculatorApp.ViewModel;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+//
+// CalculatorProgrammerBitFlipPanel.xaml.h
+// Declaration of the CalculatorProgrammerBitFlipPanel class
+//
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
+using CalculatorApp.Controls;
+using CalculatorApp.ViewModel;
+using CalculatorApp.ViewModel.Common;
+
+using System.Diagnostics;
+
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation;
+
+
 namespace CalculatorApp
 {
-    public sealed partial class CalculatorProgrammerBitFlipPanel : UserControl
+    [Windows.Foundation.Metadata.WebHostHidden]
+    public sealed partial class CalculatorProgrammerBitFlipPanel
     {
-        const int s_numBits = 64;
-        FlipButtons[] m_flipButtons = new FlipButtons[64];
-        bool m_updatingCheckedStates;
-
-
         public CalculatorProgrammerBitFlipPanel()
         {
-            this.InitializeComponent();
             m_updatingCheckedStates = false;
-
-            var booleanToVisibilityConverter = new Converters.BooleanToVisibilityConverter();
-            SetVisibilityBinding(BitFlipPanel, "IsBinaryBitFlippingEnabled", booleanToVisibilityConverter);
-
+            InitializeComponent();
             AssignFlipButtons();
         }
 
-        void OnLoaded(object sender, RoutedEventArgs e)
+        public bool ShouldEnableBit(BitLength length, int index)
         {
-            UnsubscribePropertyChanged();
+            return index <= GetIndexOfLastBit(length);
+        }
+
+        public StandardCalculatorViewModel Model => (StandardCalculatorViewModel)this.DataContext;
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
             SubscribePropertyChanged();
         }
 
-        void OnUnloaded(object sender, RoutedEventArgs e)
+        private void OnUnloaded(object sender, RoutedEventArgs e)
         {
             UnsubscribePropertyChanged();
         }
 
-        void SubscribePropertyChanged()
+        private void SubscribePropertyChanged()
         {
             if (Model != null)
             {
                 Model.PropertyChanged += OnPropertyChanged;
-
-                UpdateCheckedStates();
+                m_currentValueBitLength = Model.ValueBitLength;
+                UpdateCheckedStates(true);
             }
         }
 
-        void UnsubscribePropertyChanged()
+        private void UnsubscribePropertyChanged()
         {
             if (Model != null)
             {
@@ -70,17 +65,27 @@ namespace CalculatorApp
             }
         }
 
-        void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void OnPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(StandardCalculatorViewModel.BinaryDisplayValue))
+            if (e.PropertyName == StandardCalculatorViewModel.BinaryDigitsPropertyName)
             {
-                UpdateCheckedStates();
+                UpdateCheckedStates(false);
+                m_currentValueBitLength = Model.ValueBitLength;
+            }
+            else if (
+                e.PropertyName == StandardCalculatorViewModel.IsBitFlipCheckedPropertyName
+                || e.PropertyName == StandardCalculatorViewModel.IsProgrammerPropertyName)
+            {
+                if (Model.IsBitFlipChecked && Model.IsProgrammer)
+                {
+                    // OnBitToggle won't update the automation properties when this control isn't displayed
+                    // We need to update all automation properties names manually when the BitFlipPanel is displayed again
+                    UpdateAutomationPropertiesNames();
+                }
             }
         }
 
-        public StandardCalculatorViewModel Model => (StandardCalculatorViewModel)(this.DataContext);
-
-        void AssignFlipButtons()
+        private void AssignFlipButtons()
         {
             Debug.Assert(m_flipButtons.Length == 64);
 
@@ -150,15 +155,7 @@ namespace CalculatorApp
             m_flipButtons[63] = this.Bit63;
         }
 
-        void SetVisibilityBinding(FrameworkElement element, String path, IValueConverter converter)
-        {
-            Binding commandBinding = new Binding();
-            commandBinding.Path = new PropertyPath(path);
-            commandBinding.Converter = converter;
-            element.SetBinding(VisibilityProperty, commandBinding);
-        }
-
-        void OnBitToggled(object sender, RoutedEventArgs e)
+        private void OnBitToggled(object sender, RoutedEventArgs e)
         {
             if (m_updatingCheckedStates)
             {
@@ -170,19 +167,47 @@ namespace CalculatorApp
             // Also, if the mode is switched to other Calculator modes when the BitFlip panel is open,
             // a race condition exists in which the IsProgrammerMode property is still true and the UpdatePrimaryResult() is called,
             // which continuously alters the Display Value and the state of the Bit Flip buttons.
-            if ((Model.IsBitFlipChecked) && Model.IsProgrammer)
+            if (Model.IsBitFlipChecked && Model.IsProgrammer)
             {
-                // TraceLogger.GetInstance().LogBitFlipUsed();
-
-                var flipButton = (FlipButtons)(sender);
+                var flipButton = (FlipButtons)sender;
+                int index = (int)flipButton.Tag;
+                flipButton.SetValue(AutomationProperties.NameProperty, GenerateAutomationPropertiesName(index, flipButton.IsChecked.Value));
                 Model.ButtonPressed.Execute(flipButton.ButtonId);
             }
         }
 
-        static readonly char ch0 = LocalizationSettings.GetInstance().GetDigitSymbolFromEnUsDigit('0');
-        static readonly char[] unwantedChars = { ' ', Utils.LRE, Utils.PDF, Utils.LRO };
+        private string GenerateAutomationPropertiesName(int position, bool value)
+        {
+            var resourceLoader = AppResourceProvider.GetInstance();
+            string automationNameTemplate = resourceLoader.GetResourceString("BitFlipItemAutomationName");
+            string bitPosition;
+            if (position == 0)
+            {
+                bitPosition = resourceLoader.GetResourceString("LeastSignificantBit");
+            }
+            else
+            {
+                int lastPosition = -1;
+                if (Model != null)
+                {
+                    lastPosition = GetIndexOfLastBit(Model.ValueBitLength);
+                }
 
-        void UpdateCheckedStates()
+                if (position == lastPosition)
+                {
+                    bitPosition = resourceLoader.GetResourceString("MostSignificantBit");
+                }
+                else
+                {
+                    string indexName = resourceLoader.GetResourceString(position.ToString());
+                    string bitPositionTemplate = resourceLoader.GetResourceString("BitPosition");
+                    bitPosition = LocalizationStringUtil.GetLocalizedString(bitPositionTemplate, indexName);
+                }
+            }
+            return LocalizationStringUtil.GetLocalizedString(automationNameTemplate, bitPosition, value ? "1" : "0");
+        }
+
+        private void UpdateCheckedStates(bool updateAutomationPropertiesNames)
         {
             Debug.Assert(!m_updatingCheckedStates);
             Debug.Assert(m_flipButtons.Length == s_numBits);
@@ -192,34 +217,58 @@ namespace CalculatorApp
                 return;
             }
 
-            // Filter any unwanted characters from the displayed string.
-
-            StringBuilder stream = new StringBuilder();
-            string displayValue = Model.BinaryDisplayValue;
-            foreach(char c in displayValue)
-            {
-                if(!unwantedChars.Any(uc => uc == c))
-                {
-                    stream.Append(c);
-                }
-            }
-
-            string rawDisplay = stream.ToString();
-            int paddingCount = s_numBits - rawDisplay.Length;
-            string setBits = new string(ch0, paddingCount) + rawDisplay;
-            Debug.Assert(setBits.Length == s_numBits);
-
             m_updatingCheckedStates = true;
-            for (int bitIndex = 0; bitIndex < s_numBits; bitIndex++)
+            int index = 0;
+            bool mustUpdateTextOfMostSignificantDigits = m_currentValueBitLength != Model.ValueBitLength;
+            int previousMSDPosition = GetIndexOfLastBit(m_currentValueBitLength);
+            int newMSDPosition = GetIndexOfLastBit(Model.ValueBitLength);
+            foreach (bool val in Model.BinaryDigits)
             {
-                // Highest bit (64) is at index 0 in bit string.
-                // To get bit 0, grab from opposite end of string.
-                char bit = setBits[s_numBits - bitIndex - 1];
-
-                m_flipButtons[bitIndex].IsChecked = (bit != ch0);
+                if (index < m_flipButtons.Length)
+                {
+                    bool hasValueChanged = m_flipButtons[index].IsChecked.Value != val;
+                    m_flipButtons[index].IsChecked = val;
+                    if (updateAutomationPropertiesNames
+                        || hasValueChanged
+                        || (mustUpdateTextOfMostSignificantDigits && (index == previousMSDPosition || index == newMSDPosition)))
+                    {
+                        m_flipButtons[index].SetValue(AutomationProperties.NameProperty, GenerateAutomationPropertiesName(index, val));
+                    }
+                    ++index;
+                }
             }
 
             m_updatingCheckedStates = false;
         }
+
+        private void UpdateAutomationPropertiesNames()
+        {
+            foreach (FlipButtons flipButton in m_flipButtons)
+            {
+                int index = (int)flipButton.Tag;
+                flipButton.SetValue(AutomationProperties.NameProperty, GenerateAutomationPropertiesName(index, flipButton.IsChecked.Value));
+            }
+        }
+
+        private int GetIndexOfLastBit(BitLength length)
+        {
+            switch (length)
+            {
+                case BitLength.BitLengthQWord:
+                    return 63;
+                case BitLength.BitLengthDWord:
+                    return 31;
+                case BitLength.BitLengthWord:
+                    return 15;
+                case BitLength.BitLengthByte:
+                    return 7;
+            }
+            return -1;
+        }
+
+        private static readonly uint s_numBits = 64;
+        private readonly FlipButtons[] m_flipButtons = new FlipButtons[s_numBits];
+        private bool m_updatingCheckedStates;
+        private BitLength m_currentValueBitLength;
     }
 }

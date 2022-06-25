@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 /* The AspectRatioTrigger class is a custom trigger for use with a VisualState. The trigger is designed to fire when the
@@ -7,8 +7,8 @@
    calculating the ratio between the two properties. Additionally, users can configure whether the ratio must be strictly
    greater than the threshold, or if equal should be considered acceptable for the state to trigger. */
 
-
 using System;
+
 using Windows.Foundation;
 using Windows.UI.Xaml;
 
@@ -18,70 +18,76 @@ namespace CalculatorApp.Views.StateTriggers
     {
         Height,
         Width
-    }
+    };
 
     public sealed class AspectRatioTrigger : Windows.UI.Xaml.StateTriggerBase
     {
+        public AspectRatioTrigger()
+        {
+            SetActive(false);
+        }
+
         /* The source for which this class will respond to size changed events. */
         public FrameworkElement Source
         {
-            get { return (FrameworkElement)GetValue(SourceProperty); }
-            set { SetValue(SourceProperty, value); }
+            get => (FrameworkElement)GetValue(SourceProperty);
+            set => SetValue(SourceProperty, value);
         }
 
+        // Using a DependencyProperty as the backing store for Source.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SourceProperty =
-            DependencyProperty.Register("Source", typeof(FrameworkElement), typeof(AspectRatioTrigger), new PropertyMetadata(null));
+            DependencyProperty.Register(nameof(Source), typeof(FrameworkElement), typeof(AspectRatioTrigger), new PropertyMetadata(default(FrameworkElement), (sender, args) =>
+            {
+                var self = (AspectRatioTrigger)sender;
+                self.OnSourcePropertyChanged((FrameworkElement)args.OldValue, (FrameworkElement)args.NewValue);
+            }));
 
         /* Either Height or Width. The property will determine which aspect is used as the numerator when calculating
            the aspect ratio. */
         public Aspect NumeratorAspect
         {
-            get { return (Aspect)GetValue(NumeratorAspectProperty); }
-            set { SetValue(NumeratorAspectProperty, value); }
+            get => (Aspect)GetValue(NumeratorAspectProperty);
+            set => SetValue(NumeratorAspectProperty, value);
         }
 
-        // Using a DependencyProperty as the backing store for NumeratorAspect.  This enables animation, styling, binding, etc...
+        // Using a DependencyProperty as the backing store for NumeratorAspect  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty NumeratorAspectProperty =
-            DependencyProperty.Register("NumeratorAspect", typeof(Aspect), typeof(AspectRatioTrigger), new PropertyMetadata(Aspect.Height));
-
+            DependencyProperty.Register(nameof(NumeratorAspect), typeof(Aspect), typeof(AspectRatioTrigger), new PropertyMetadata(default(Aspect)));
 
         /* The threshold that will cause the trigger to fire when the aspect ratio exceeds this value. */
         public double Threshold
         {
-            get { return (double)GetValue(ThresholdProperty); }
-            set { SetValue(ThresholdProperty, value); }
+            get => (double)GetValue(ThresholdProperty);
+            set => SetValue(ThresholdProperty, value);
         }
 
         // Using a DependencyProperty as the backing store for Threshold.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ThresholdProperty =
-            DependencyProperty.Register("Threshold", typeof(double), typeof(AspectRatioTrigger), new PropertyMetadata(0.0));
-
-
+            DependencyProperty.Register(nameof(Threshold), typeof(double), typeof(AspectRatioTrigger), new PropertyMetadata(0.0));
 
         /* If true, the trigger will fire if the aspect ratio is greater than or equal to the threshold. */
         public bool ActiveIfEqual
         {
-            get { return (bool)GetValue(ActiveIfEqualProperty); }
-            set { SetValue(ActiveIfEqualProperty, value); }
+            get => (bool)GetValue(ActiveIfEqualProperty);
+            set => SetValue(ActiveIfEqualProperty, value);
         }
 
-        // Using a DependencyProperty as the backing store for ActiveIfEqual.  This enables animation, styling, binding, etc...
+        // Using a DependencyProperty as the backing store for ActiveEqual.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ActiveIfEqualProperty =
-            DependencyProperty.Register("ActiveIfEqual", typeof(bool), typeof(AspectRatioTrigger), new PropertyMetadata(false));
+            DependencyProperty.Register(nameof(ActiveIfEqual), typeof(bool), typeof(AspectRatioTrigger), new PropertyMetadata(false));
 
-
-        AspectRatioTrigger()
+        ~AspectRatioTrigger()
         {
-            SetActive(false);
+            UnregisterSizeChanged(Source);
         }
 
-        void OnSourcePropertyChanged(FrameworkElement oldValue, FrameworkElement newValue)
+        private void OnSourcePropertyChanged(FrameworkElement oldValue, FrameworkElement newValue)
         {
             UnregisterSizeChanged(oldValue);
             RegisterSizeChanged(newValue);
         }
 
-        void RegisterSizeChanged(FrameworkElement element)
+        private void RegisterSizeChanged(FrameworkElement element)
         {
             if (element == null)
             {
@@ -96,7 +102,7 @@ namespace CalculatorApp.Views.StateTriggers
             element.SizeChanged += OnSizeChanged;
         }
 
-        void UnregisterSizeChanged(FrameworkElement element)
+        private void UnregisterSizeChanged(FrameworkElement element)
         {
             if (element != null)
             {
@@ -104,12 +110,12 @@ namespace CalculatorApp.Views.StateTriggers
             }
         }
 
-        void OnSizeChanged(object sender, SizeChangedEventArgs e)
+        private void OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             UpdateIsActive(e.NewSize);
         }
 
-        void UpdateIsActive(Size sourceSize)
+        private void UpdateIsActive(Size sourceSize)
         {
             double numerator, denominator;
             if (NumeratorAspect == Aspect.Height)
@@ -134,6 +140,6 @@ namespace CalculatorApp.Views.StateTriggers
 
             SetActive(isActive);
         }
-
     }
 }
+

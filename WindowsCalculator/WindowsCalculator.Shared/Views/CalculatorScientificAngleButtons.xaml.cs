@@ -1,92 +1,95 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+//
+// CalculatorScientificAngleButtons.xaml.h
+// Declaration of the CalculatorScientificAngleButtons class
+//
+
+using CalculatorApp.Utils;
 using CalculatorApp.ViewModel;
-using System.Windows.Input;
-using CalculatorApp.Common;
+using CalculatorApp.ViewModel.Common;
+
+using Windows.UI.Xaml;
 
 namespace CalculatorApp
 {
-    public sealed partial class CalculatorScientificAngleButtons : UserControl
+    [Windows.Foundation.Metadata.WebHostHidden]
+    public sealed partial class CalculatorScientificAngleButtons
     {
-        bool m_isErrorVisualState;
-
-        public StandardCalculatorViewModel Model => (StandardCalculatorViewModel)(DataContext);
-
-        public ICommand ButtonPressed;
-
-
         public CalculatorScientificAngleButtons()
         {
-            this.InitializeComponent();
-            ButtonPressed = new DelegateCommand(OnAngleButtonPressed);
             m_isErrorVisualState = false;
+            InitializeComponent();
         }
 
-        void HypButton_Toggled(object sender, RoutedEventArgs e)
+        public StandardCalculatorViewModel Model => (StandardCalculatorViewModel)this.DataContext;
+
+        public System.Windows.Input.ICommand ButtonPressed
         {
-            // TraceLogger.GetInstance().LogHypButtonUsed(ApplicationView.GetApplicationViewIdForWindow(CoreWindow.GetForCurrentThread()));
-        }
-
-        void FToEButton_Toggled(object sender, RoutedEventArgs e)
-        {
-            var viewModel = (StandardCalculatorViewModel)(this.DataContext);
-            viewModel.FtoEButtonToggled();
-        }
-
-        void OnAngleButtonPressed(object commandParameter)
-        {
-            // TraceLogger.GetInstance().LogAngleButtonUsed(ApplicationView.GetApplicationViewIdForWindow(CoreWindow.GetForCurrentThread()));
-            String buttonId = (String)(commandParameter);
-
-            degreeButton.Visibility = Visibility.Collapsed;
-            radianButton.Visibility = Visibility.Collapsed;
-            gradsButton.Visibility = Visibility.Collapsed;
-
-            if (buttonId == "0")
+            get
             {
-                Model.SwitchAngleType(NumbersAndOperatorsEnum.Radians);
-                radianButton.Visibility = Visibility.Visible;
-                radianButton.Focus(FocusState.Programmatic);
-            }
-            else if (buttonId == "1")
-            {
-                Model.SwitchAngleType(NumbersAndOperatorsEnum.Grads);
-                gradsButton.Visibility = Visibility.Visible;
-                gradsButton.Focus(FocusState.Programmatic);
-            }
-            else if (buttonId == "2")
-            {
-                Model.SwitchAngleType(NumbersAndOperatorsEnum.Degree);
-                degreeButton.Visibility = Visibility.Visible;
-                degreeButton.Focus(FocusState.Programmatic);
+                if (donotuse_ButtonPressed == null)
+                {
+                    donotuse_ButtonPressed = DelegateCommandUtils.MakeDelegateCommand(this,
+                        (that, param) =>
+                        {
+                            that.OnAngleButtonPressed(param);
+                        });
+                }
+                return donotuse_ButtonPressed;
             }
         }
+        private System.Windows.Input.ICommand donotuse_ButtonPressed;
 
         public bool IsErrorVisualState
         {
             get => m_isErrorVisualState;
-
             set
             {
                 if (m_isErrorVisualState != value)
                 {
                     m_isErrorVisualState = value;
-                    String newState = m_isErrorVisualState ? "ErrorLayout" : "NoErrorLayout";
+                    string newState = m_isErrorVisualState ? "ErrorFlyout" : "NoErrorFlyout";
                     VisualStateManager.GoToState(this, newState, false);
                 }
             }
         }
+
+        private void OnAngleButtonPressed(object commandParameter)
+        {
+            string buttonId = (string)commandParameter;
+
+            DegreeButton.Visibility = Visibility.Collapsed;
+            RadianButton.Visibility = Visibility.Collapsed;
+            GradsButton.Visibility = Visibility.Collapsed;
+
+            if (buttonId == "0")
+            {
+                Model.SwitchAngleType(NumbersAndOperatorsEnum.Radians);
+                RadianButton.Visibility = Visibility.Visible;
+                RadianButton.Focus(FocusState.Programmatic);
+            }
+            else if (buttonId == "1")
+            {
+                Model.SwitchAngleType(NumbersAndOperatorsEnum.Grads);
+                GradsButton.Visibility = Visibility.Visible;
+                GradsButton.Focus(FocusState.Programmatic);
+            }
+            else if (buttonId == "2")
+            {
+                Model.SwitchAngleType(NumbersAndOperatorsEnum.Degree);
+                DegreeButton.Visibility = Visibility.Visible;
+                DegreeButton.Focus(FocusState.Programmatic);
+            }
+        }
+
+        private void FToEButton_Toggled(object sender, RoutedEventArgs e)
+        {
+            var viewModel = (StandardCalculatorViewModel)this.DataContext;
+            viewModel.FtoEButtonToggled();
+        }
+
+        private bool m_isErrorVisualState;
     }
 }

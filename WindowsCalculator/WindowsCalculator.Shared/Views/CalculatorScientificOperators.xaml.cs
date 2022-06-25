@@ -1,112 +1,101 @@
-using CalculatorApp.ViewModel;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
-// The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
+//
+// CalculatorScientificOperators.xaml.h
+// Declaration of the CalculatorScientificOperators class
+//
+
+using CalculatorApp.Common;
+using CalculatorApp.ViewModel;
+using CalculatorApp.ViewModel.Common;
+
+using Windows.UI.Xaml;
 
 namespace CalculatorApp
 {
-    public sealed partial class CalculatorScientificOperators : UserControl
+    [Windows.Foundation.Metadata.WebHostHidden]
+    public sealed partial class CalculatorScientificOperators
     {
-        public StandardCalculatorViewModel Model => (StandardCalculatorViewModel)(DataContext);
+        public CalculatorScientificOperators()
+        {
+            InitializeComponent();
 
+            ExpButton.SetValue(KeyboardShortcutManager.VirtualKeyProperty, MyVirtualKey.E);
+        }
 
+        public StandardCalculatorViewModel Model => (StandardCalculatorViewModel)this.DataContext;
 
         public bool IsErrorVisualState
         {
-            get { return (bool)GetValue(IsErrorVisualStateProperty); }
-            set { SetValue(IsErrorVisualStateProperty, value); }
+            get => (bool)GetValue(IsErrorVisualStateProperty);
+            set => SetValue(IsErrorVisualStateProperty, value);
         }
 
+        // Using a DependencyProperty as the backing store for IsErrorVisualState.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty IsErrorVisualStateProperty =
-            DependencyProperty.Register("IsErrorVisualState", typeof(bool), typeof(CalculatorScientificOperators), new PropertyMetadata(false));
+            DependencyProperty.Register(nameof(IsErrorVisualState), typeof(bool), typeof(CalculatorScientificOperators), new PropertyMetadata(false, (sender, args) =>
+            {
+                var self = (CalculatorScientificOperators)sender;
+                self.OnIsErrorVisualStatePropertyChanged((bool)args.OldValue, (bool)args.NewValue);
+            }));
 
-        public bool IsWideLayout
+        public void OpenParenthesisButton_GotFocus(object sender, RoutedEventArgs e)
         {
-            get { return (bool)GetValue(IsWideLayoutProperty); }
-            set { SetValue(IsWideLayoutProperty, value); }
+            Model.SetOpenParenthesisCountNarratorAnnouncement();
         }
 
-        public static readonly DependencyProperty IsWideLayoutProperty =
-            DependencyProperty.Register("IsWideLayout", typeof(bool), typeof(CalculatorScientificOperators), new PropertyMetadata(false));
-
-        bool IsShiftEnabled(bool isWideLayout, bool isErrorState)
+        public string ParenthesisCountToString(uint count)
         {
-            return !(isWideLayout || isErrorState);
+            return (count == 0) ? "" : count.ToString();
         }
 
-        public CalculatorScientificOperators()
+        private void OnIsErrorVisualStatePropertyChanged(bool oldValue, bool newValue)
         {
-            this.InitializeComponent();
-
-            // UNO TODO
-            // expButton.SetValue(Common.KeyboardShortcutManager.VirtualKeyProperty, Common.MyVirtualKey.E);
-            // Common.KeyboardShortcutManager.ShiftButtonChecked(false);
-        }
-
-        void ShortLayout_Completed(object sender, object e)
-        {
-            IsWideLayout = false;
-            SetOperatorRowVisibility();
-            // UNO TODO
-            // Common.KeyboardShortcutManager.ShiftButtonChecked(Model.IsShiftChecked);
-        }
-
-        void WideLayout_Completed(object sender, object e)
-        {
-            IsWideLayout = true;
-            SetOperatorRowVisibility();
-            // UNO TODO
-            // Common.KeyboardShortcutManager.ShiftButtonChecked(Model.IsShiftChecked);
-        }
-
-        void OnIsErrorVisualStatePropertyChanged(bool oldValue, bool newValue)
-        {
-            String newState = newValue ? "ErrorLayout" : "NoErrorLayout";
+            string newState = newValue ? "ErrorLayout" : "NoErrorLayout";
             VisualStateManager.GoToState(this, newState, false);
             NumberPad.IsErrorVisualState = newValue;
         }
 
-        void shiftButton_Check(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private void ShiftButton_Check(object sender, RoutedEventArgs e)
         {
-            bool isChecked = shiftButton.IsChecked.Value;
-            Model.IsShiftChecked = isChecked;
-            // UNO TODO
-            // Common.KeyboardShortcutManager.ShiftButtonChecked(isChecked);
             SetOperatorRowVisibility();
         }
 
-        void shiftButton_IsEnabledChanged(
-             object sender,
-             Windows.UI.Xaml.DependencyPropertyChangedEventArgs e)
+        private void ShiftButton_Uncheck(object sender, RoutedEventArgs e)
         {
+            ShiftButton.IsChecked = false;
             SetOperatorRowVisibility();
-            // UNO TODO
-            // Common.KeyboardShortcutManager.ShiftButtonChecked(ShiftButton.IsEnabled && ShiftButton.IsChecked.Value);
+            ShiftButton.Focus(FocusState.Programmatic);
         }
 
-        void SetOperatorRowVisibility()
+        private void TrigFlyoutShift_Toggle(object sender, RoutedEventArgs e)
+        {
+            SetTrigRowVisibility();
+        }
+
+        private void TrigFlyoutHyp_Toggle(object sender, RoutedEventArgs e)
+        {
+            SetTrigRowVisibility();
+        }
+
+        private void FlyoutButton_Clicked(object sender, RoutedEventArgs e)
+        {
+            HypButton.IsChecked = false;
+            TrigShiftButton.IsChecked = false;
+            Trigflyout.Hide();
+            FuncFlyout.Hide();
+        }
+
+        private void ShiftButton_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            SetOperatorRowVisibility();
+        }
+
+        private void SetOperatorRowVisibility()
         {
             Visibility rowVis, invRowVis;
-
-            if (IsWideLayout)
-            {
-                rowVis = Visibility.Visible;
-                invRowVis = Visibility.Visible;
-            }
-            else if (shiftButton.IsChecked.Value)
+            if (ShiftButton.IsChecked.Value)
             {
                 rowVis = Visibility.Collapsed;
                 invRowVis = Visibility.Visible;
@@ -118,20 +107,51 @@ namespace CalculatorApp
             }
 
             Row1.Visibility = rowVis;
-            Row2.Visibility = rowVis;
             InvRow1.Visibility = invRowVis;
-            InvRow2.Visibility = invRowVis;
         }
 
-        void OpenParenthesisButton_GotFocus(object sender, RoutedEventArgs e)
+        private void SetTrigRowVisibility()
         {
-            Model.SetOpenParenthesisCountNarratorAnnouncement();
+            bool isShiftChecked = TrigShiftButton.IsChecked.Value;
+            bool isHypeChecked = HypButton.IsChecked.Value;
+
+            InverseHyperbolicTrigFunctions.Visibility = Visibility.Collapsed;
+            InverseTrigFunctions.Visibility = Visibility.Collapsed;
+            HyperbolicTrigFunctions.Visibility = Visibility.Collapsed;
+            TrigFunctions.Visibility = Visibility.Collapsed;
+
+            if (isShiftChecked && isHypeChecked)
+            {
+                InverseHyperbolicTrigFunctions.Visibility = Visibility.Visible;
+            }
+            else if (isShiftChecked && !isHypeChecked)
+            {
+                InverseTrigFunctions.Visibility = Visibility.Visible;
+            }
+            else if (!isShiftChecked && isHypeChecked)
+            {
+                HyperbolicTrigFunctions.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                TrigFunctions.Visibility = Visibility.Visible;
+            }
         }
 
-        String ParenthesisCountToString(uint count)
+        private void ClearEntryButton_LostFocus(object sender, RoutedEventArgs e)
         {
-            return (count == 0) ? "" : count.ToString();
+            if (ClearEntryButton.Visibility == Visibility.Collapsed && ClearButton.Visibility == Visibility.Visible)
+            {
+                ClearButton.Focus(FocusState.Programmatic);
+            }
         }
 
+        private void ClearButton_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (ClearEntryButton.Visibility == Visibility.Visible && ClearButton.Visibility == Visibility.Collapsed)
+            {
+                ClearEntryButton.Focus(FocusState.Programmatic);
+            }
+        }
     }
 }

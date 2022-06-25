@@ -1,106 +1,52 @@
-using CalculatorApp.Common;
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+using CalculatorApp.Utils;
 using CalculatorApp.ViewModel;
+using CalculatorApp.ViewModel.Common;
+
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text.RegularExpressions;
-using System.Windows.Input;
+
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Globalization.NumberFormatting;
 using Windows.UI.Core;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using WindowsCalculator;
-
-// The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace CalculatorApp
 {
-    public sealed partial class Calculator : UserControl
+    public class FontTable
     {
-        event FullscreenFlyoutClosedEventHandler FullscreenFlyoutClosed;
+        public string numericSystem;
+        public double fullFont;
+        public double fullFontMin;
+        public double portraitMin;
+        public double snapFont;
+        public double fullNumPadFont;
+        public double snapScientificNumPadFont;
+        public double portraitScientificNumPadFont;
+    }
 
+    public delegate void FullscreenFlyoutClosedEventHandler();
 
-        StandardCalculatorViewModel Model => (CalculatorApp.ViewModel.StandardCalculatorViewModel)(this.DataContext);
-
-
-
-        public bool IsStandard
-        {
-            get { return (bool)GetValue(IsStandardProperty); }
-            set { SetValue(IsStandardProperty, value); }
-        }
-
-        public static readonly DependencyProperty IsStandardProperty =
-            DependencyProperty.Register("IsStandard", typeof(bool), typeof(Calculator), new PropertyMetadata(false));
-
-
-
-        public bool IsScientific
-        {
-            get { return (bool)GetValue(IsScientificProperty); }
-            set { SetValue(IsScientificProperty, value); }
-        }
-
-        public static readonly DependencyProperty IsScientificProperty =
-            DependencyProperty.Register("IsScientific", typeof(bool), typeof(Calculator), new PropertyMetadata(false));
-
-        public bool IsProgrammer
-        {
-            get { return (bool)GetValue(IsProgrammerProperty); }
-            set { SetValue(IsProgrammerProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for IsProgrammer.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty IsProgrammerProperty =
-            DependencyProperty.Register("IsProgrammer", typeof(bool), typeof(Calculator), new PropertyMetadata(false));
-
-
-        Windows.UI.Xaml.Controls.ListView m_tokenList;
-        Windows.UI.Xaml.Controls.MenuFlyout m_displayFlyout;
-        bool m_doAnimate;
-        bool m_resultAnimate;
-        bool m_isLastAnimatedInScientific;
-        bool m_isLastAnimatedInProgrammer;
-        bool m_IsLastFlyoutMemory = false;
-        bool m_IsLastFlyoutHistory = false;
-        HistoryList m_historyList;
-        bool m_fIsHistoryFlyoutOpen;
-        bool m_fIsMemoryFlyoutOpen;
-
-        string m_openMemoryFlyoutAutomationName;
-        string m_closeMemoryFlyoutAutomationName;
-        string m_openHistoryFlyoutAutomationName;
-        string m_closeHistoryFlyoutAutomationName;
-
-        public ICommand HistoryButtonPressed;
-
-        Windows.UI.Xaml.Controls.PivotItem m_pivotItem;
-        bool m_IsDigit = false;
-        Memory m_memory;
+    [Windows.Foundation.Metadata.WebHostHidden]
+    public sealed partial class Calculator
+    {
+        public event FullscreenFlyoutClosedEventHandler FullscreenFlyoutClosed;
 
         public Calculator()
         {
-            this.InitializeComponent();
-
             m_doAnimate = false;
             m_isLastAnimatedInScientific = false;
             m_isLastAnimatedInProgrammer = false;
             m_resultAnimate = false;
-            HistoryButtonPressed = new DelegateCommand(ToggleHistoryFlyout);
 
             SetFontSizeResources();
+            InitializeComponent();
             LoadResourceStrings();
 
             if (LocalizationService.GetInstance().IsRtlLayout())
@@ -108,76 +54,176 @@ namespace CalculatorApp
                 HistoryButton.HorizontalAlignment = HorizontalAlignment.Left;
             }
 
-            m_displayFlyout = (MenuFlyout)(Resources["DisplayContextMenu"]);
+            m_displayFlyout = (MenuFlyout)Resources["DisplayContextMenu"];
             var resLoader = AppResourceProvider.GetInstance();
+            CopyMenuItem.Text = resLoader.GetResourceString("copyMenuItem");
+            PasteMenuItem.Text = resLoader.GetResourceString("pasteMenuItem");
 
-            // UNO TODO
-            // CopyMenuItem.Text = resLoader.GetResourceString("copyMenuItem");
-            // PasteMenuItem.Text = resLoader.GetResourceString("pasteMenuItem");
+            this.SizeChanged += Calculator_SizeChanged;
         }
 
-        void LoadResourceStrings()
+        public CalculatorApp.ViewModel.StandardCalculatorViewModel Model => (StandardCalculatorViewModel)this.DataContext;
+
+        public bool IsStandard
         {
-            var resProvider = AppResourceProvider.GetInstance();
-            m_openMemoryFlyoutAutomationName = resProvider.GetResourceString("MemoryButton_Open");
-            m_closeMemoryFlyoutAutomationName = resProvider.GetResourceString("MemoryButton_Close");
-            m_openHistoryFlyoutAutomationName = resProvider.GetResourceString("HistoryButton_Open");
-            m_closeHistoryFlyoutAutomationName = resProvider.GetResourceString("HistoryButton_Close");
-            AutomationProperties.SetName(MemoryButton, m_openMemoryFlyoutAutomationName);
-            AutomationProperties.SetName(HistoryButton, m_openHistoryFlyoutAutomationName);
+            get => (bool)GetValue(IsStandardProperty);
+            set => SetValue(IsStandardProperty, value);
         }
 
-        void InitializeHistoryView(HistoryViewModel historyVM)
+        // Using a DependencyProperty as the backing store for IsStandard.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsStandardProperty =
+            DependencyProperty.Register(nameof(IsStandard), typeof(bool), typeof(Calculator), new PropertyMetadata(false, (sender, args) =>
+            {
+                var self = (Calculator)sender;
+                self.OnIsStandardPropertyChanged((bool)args.OldValue, (bool)args.NewValue);
+            }));
+
+        public bool IsScientific
+        {
+            get => (bool)GetValue(IsScientificProperty);
+            set => SetValue(IsScientificProperty, value);
+        }
+
+        // Using a DependencyProperty as the backing store for IsScientific.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsScientificProperty =
+            DependencyProperty.Register(nameof(IsScientific), typeof(bool), typeof(Calculator), new PropertyMetadata(false, (sender, args) =>
+            {
+                var self = (Calculator)sender;
+                self.OnIsScientificPropertyChanged((bool)args.OldValue, (bool)args.NewValue);
+            }));
+
+        public bool IsProgrammer
+        {
+            get => (bool)GetValue(IsProgrammerProperty);
+            set => SetValue(IsProgrammerProperty, value);
+        }
+
+        // Using a DependencyProperty as the backing store for IsProgrammer.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsProgrammerProperty =
+            DependencyProperty.Register(nameof(IsProgrammer), typeof(bool), typeof(Calculator), new PropertyMetadata(false, (sender, args) =>
+            {
+                var self = (Calculator)sender;
+                self.OnIsProgrammerPropertyChanged((bool)args.OldValue, (bool)args.NewValue);
+            }));
+
+        public bool IsAlwaysOnTop
+        {
+            get => (bool)GetValue(IsAlwaysOnTopProperty);
+            set => SetValue(IsAlwaysOnTopProperty, value);
+        }
+
+        // Using a DependencyProperty as the backing store for IsAlwaysOnTop.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsAlwaysOnTopProperty =
+            DependencyProperty.Register(nameof(IsAlwaysOnTop), typeof(bool), typeof(Calculator), new PropertyMetadata(false, (sender, args) =>
+            {
+                var self = (Calculator)sender;
+                self.OnIsAlwaysOnTopPropertyChanged((bool)args.OldValue, (bool)args.NewValue);
+            }));
+
+        public System.Windows.Input.ICommand HistoryButtonPressed
+        {
+            get
+            {
+                if (donotuse_HistoryButtonPressed == null)
+                {
+                    donotuse_HistoryButtonPressed = DelegateCommandUtils.MakeDelegateCommand(this,
+                        (that, param) =>
+                        {
+                            that.ToggleHistoryFlyout(param);
+                        });
+                }
+                return donotuse_HistoryButtonPressed;
+            }
+        }
+        private System.Windows.Input.ICommand donotuse_HistoryButtonPressed;
+
+        private static readonly UISettings uiSettings = new UISettings();
+        public void AnimateCalculator(bool resultAnimate)
+        {
+            if (uiSettings.AnimationsEnabled)
+            {
+                m_doAnimate = true;
+                m_resultAnimate = resultAnimate;
+                if (((m_isLastAnimatedInScientific && IsScientific) || (!m_isLastAnimatedInScientific && !IsScientific))
+                    & ((m_isLastAnimatedInProgrammer && IsProgrammer) || (!m_isLastAnimatedInProgrammer && !IsProgrammer)))
+                {
+                    // We are forcing the animation here
+                    // It's because if last animation was in standard, then go to unit converter, then comes back to standard
+                    // The state for the calculator does not change and the animation would not get run.
+                    this.OnModeVisualStateCompleted(null, null);
+                }
+            }
+        }
+
+        public void InitializeHistoryView(CalculatorApp.ViewModel.HistoryViewModel historyVM)
         {
             if (m_historyList == null)
             {
-                m_historyList = new HistoryList();
-                m_historyList.DataContext = historyVM;
+                m_historyList = new HistoryList
+                {
+                    DataContext = historyVM
+                };
                 historyVM.HideHistoryClicked += OnHideHistoryClicked;
                 historyVM.HistoryItemClicked += OnHistoryItemClicked;
             }
         }
 
-        // Since we need different font sizes for different numeric system,
-        // we use a table of optimal font sizes for each numeric system.
-        static readonly FontTable[] fontTables = {
-            new FontTable("Arab", 104, 29.333, 23, 40, 56, 40, 56 ),   new FontTable( "ArabExt", 104, 29.333, 23, 40, 56, 40, 56 ), new FontTable( "Beng", 104, 26, 17, 40, 56, 40, 56 ),
-            new FontTable("Deva", 104, 29.333, 20.5, 40, 56, 40, 56 ), new FontTable( "Gujr", 104, 29.333, 18.5, 40, 56, 40, 56 ),  new FontTable( "Khmr", 104, 29.333, 19.5, 40, 56, 40, 56 ),
-            new FontTable("Knda", 104, 25, 17, 40, 56, 40, 56 ),       new FontTable( "Laoo", 104, 28, 18, 40, 56, 40, 56 ),        new FontTable( "Latn", 104, 29.333, 23, 40, 56, 40, 56 ),
-            new FontTable("Mlym", 80, 22, 15.5, 30, 56, 35, 48 ),      new FontTable( "Mymr", 104, 29.333, 20, 35, 48, 36, 48 ),    new FontTable( "Orya", 88, 26, 20, 40, 56, 40, 56 ),
-            new FontTable("TamlDec", 77, 25, 16, 28, 48, 34, 48 ),     new FontTable( "Telu", 104, 25, 16.5, 40, 56, 40, 56 ),      new FontTable( "Thai", 104, 28, 18, 40, 56, 40, 56 ),
-            new FontTable("Tibt", 104, 29.333, 20, 40, 56, 40, 56 ),   new FontTable( "Default", 104, 29.333, 23, 40, 56, 40, 56 ),
-        };
-
-        void SetFontSizeResources()
+        public void UpdatePanelViewState()
         {
-#if true // HAS_UNO
-            FontTable currentItem = fontTables.First(f => f.numericSystem == "Default");
-#else
-            DecimalFormatter formatter = LocalizationService.GetRegionalSettingsAwareDecimalFormatter();
-
-            FontTable currentItem = fontTables.First(f => f.numericSystem == formatter.NumeralSystem);
-#endif
-
-            this.Resources.Add(("ResultFullFontSize"), currentItem.fullFont);
-            this.Resources.Add(("ResultFullMinFontSize"), currentItem.fullFontMin);
-            this.Resources.Add(("ResultPortraitMinFontSize"), currentItem.portraitMin);
-            this.Resources.Add(("ResultSnapFontSize"), currentItem.snapFont);
-            this.Resources.Add(("CalcButtonCaptionSizeOverride"), currentItem.fullNumPadFont);
-            this.Resources.Add(("CalcButtonScientificSnapCaptionSizeOverride"), currentItem.snapScientificNumPadFont);
-            this.Resources.Add(("CalcButtonScientificPortraitCaptionSizeOverride"), currentItem.portraitScientificNumPadFont);
+            UpdateHistoryState();
+            UpdateMemoryState();
         }
 
-        void OnLoaded(object sender, RoutedEventArgs args)
+        public void UnregisterEventHandlers()
+        {
+            ExpressionText.UnregisterEventHandlers();
+            AlwaysOnTopResults.UnregisterEventHandlers();
+        }
+
+        public void CloseHistoryFlyout()
+        {
+            if (m_fIsHistoryFlyoutOpen)
+            {
+                HistoryFlyout.Hide();
+            }
+        }
+
+        public void CloseMemoryFlyout()
+        {
+            if (m_fIsMemoryFlyoutOpen)
+            {
+                MemoryFlyout.Hide();
+            }
+        }
+
+        public void SetDefaultFocus()
+        {
+            if (!IsAlwaysOnTop)
+            {
+                Results.Focus(FocusState.Programmatic);
+            }
+            else
+            {
+                AlwaysOnTopResults.Focus(FocusState.Programmatic);
+            }
+        }
+
+        // Methods used by native bindings
+        public static Visibility ShouldDisplayHistoryButton(bool isAlwaysOnTop, bool isProgrammer, Visibility dockPanelVisibility)
+        {
+            return !isAlwaysOnTop && !isProgrammer && dockPanelVisibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
         {
             Model.PropertyChanged += OnCalcPropertyChanged;
             Model.HideMemoryClicked += OnHideMemoryClicked;
 
             InitializeHistoryView(Model.HistoryVM);
-            String historyPaneName = AppResourceProvider.GetInstance().GetResourceString("HistoryPane");
-            HistoryFlyout.FlyoutPresenterStyle.Setters.Append(new Setter(AutomationProperties.NameProperty, historyPaneName));
-            String memoryPaneName = AppResourceProvider.GetInstance().GetResourceString("MemoryPane");
-            MemoryFlyout.FlyoutPresenterStyle.Setters.Append(new Setter(AutomationProperties.NameProperty, memoryPaneName));
+            string historyPaneName = AppResourceProvider.GetInstance().GetResourceString("HistoryPane");
+            HistoryFlyout.FlyoutPresenterStyle.Setters.Add(new Setter(AutomationProperties.NameProperty, historyPaneName));
+            string memoryPaneName = AppResourceProvider.GetInstance().GetResourceString("MemoryPane");
+            MemoryFlyout.FlyoutPresenterStyle.Setters.Add(new Setter(AutomationProperties.NameProperty, memoryPaneName));
 
             if (Windows.Foundation.Metadata.ApiInformation.IsEventPresent("Windows.UI.Xaml.Controls.Primitives.FlyoutBase", "Closing"))
             {
@@ -186,96 +232,123 @@ namespace CalculatorApp
             }
 
             // Delay load things later when we get a chance.
-            var _ = Dispatcher.RunAsync(
-                CoreDispatcherPriority.Normal, () =>
+            WeakReference weakThis = new WeakReference(this);
+            _ = this.Dispatcher.RunAsync(
+                CoreDispatcherPriority.Normal, new DispatchedHandler(() =>
                 {
-                    // if (// TraceLogger.GetInstance().UpdateWindowIdLog(ApplicationView.GetApplicationViewIdForWindow(CoreWindow.GetForCurrentThread())))
+                    if (TraceLogger.GetInstance().IsWindowIdInLog(ApplicationView.GetApplicationViewIdForWindow(CoreWindow.GetForCurrentThread())))
                     {
-                        // var refThis = weakThis.Resolve<Calculator>();
-                        // if (refThis != null)
+                        if (weakThis.Target is Calculator refThis)
                         {
-                            this.GetMemory();
+                            refThis.GetMemory();
                         }
                     }
-                });
+                }));
         }
 
-        string GetCurrentLayoutState()
+        private void LoadResourceStrings()
         {
-            string state;
-
-            if (IsProgrammer)
-            {
-                state = "Programmer";
-            }
-            else if (IsScientific)
-            {
-                state = "Scientific";
-            }
-            else
-            {
-                state = "Standard";
-            }
-
-            return state;
+            var resProvider = AppResourceProvider.GetInstance();
+            m_openMemoryFlyoutAutomationName = resProvider.GetResourceString("MemoryButton_Open");
+            m_closeMemoryFlyoutAutomationName = resProvider.GetResourceString("MemoryButton_Close");
+            m_openHistoryFlyoutAutomationName = resProvider.GetResourceString("HistoryButton_Open");
+            m_closeHistoryFlyoutAutomationName = resProvider.GetResourceString("HistoryButton_Close");
+            m_dockPanelHistoryMemoryLists = resProvider.GetResourceString("DockPanel_HistoryMemoryLists");
+            m_dockPanelMemoryList = resProvider.GetResourceString("DockPanel_MemoryList");
+            AutomationProperties.SetName(MemoryButton, m_openMemoryFlyoutAutomationName);
+            AutomationProperties.SetName(HistoryButton, m_openHistoryFlyoutAutomationName);
+            AutomationProperties.SetName(DockPanel, m_dockPanelHistoryMemoryLists);
         }
 
-        void UpdateViewState()
+        private void UpdateViewState()
         {
             string state;
             if (IsProgrammer)
             {
                 state = "Programmer";
                 Model.IsDecimalEnabled = false;
-                // UNO TODO
-                // ResultsMVisualStateTrigger.MinWindowHeight = 640;
+                ResultsMVisualStateTrigger.MinWindowHeight = 640;
             }
             else if (IsScientific)
             {
                 state = "Scientific";
                 Model.IsDecimalEnabled = true;
-                // UNO TODO
-                // ResultsMVisualStateTrigger.MinWindowHeight = 544;
+                ResultsMVisualStateTrigger.MinWindowHeight = 544;
             }
             else
             {
                 state = "Standard";
                 Model.IsDecimalEnabled = true;
-                // UNO TODO
-                // ResultsMVisualStateTrigger.MinWindowHeight = 1;
+                ResultsMVisualStateTrigger.MinWindowHeight = 1;
             }
 
             CloseHistoryFlyout();
             CloseMemoryFlyout();
 
-            VisualStateManager.GoToState(this, state, true /*useTransitions*/);
+            VisualStateManager.GoToState(this, state, true);
         }
 
-        public void AnimateCalculator(bool resultAnimate)
+        private void UpdateMemoryState()
         {
-            if (App.IsAnimationEnabled())
+            if (!IsAlwaysOnTop)
             {
-                m_doAnimate = true;
-                m_resultAnimate = resultAnimate;
-                if (((m_isLastAnimatedInScientific && IsScientific) || (!m_isLastAnimatedInScientific && !IsScientific))
-                    && ((m_isLastAnimatedInProgrammer && IsProgrammer) || (!m_isLastAnimatedInProgrammer && !IsProgrammer)))
+                if (!Model.IsMemoryEmpty)
                 {
-                    // We are forcing the animation here
-                    // It's because if last animation was in standard, then go to unit converter, then comes back to standard
-                    // The state for the calculator does not change and the animation would not get run.
-                    this.OnStoryboardCompleted(null, null);
+                    MemRecall.IsEnabled = true;
+                    ClearMemoryButton.IsEnabled = true;
+                }
+                else
+                {
+                    MemRecall.IsEnabled = false;
+                    ClearMemoryButton.IsEnabled = false;
+                }
+
+                if (DockPanel.Visibility == Visibility.Visible)
+                {
+                    CloseMemoryFlyout();
+                    SetChildAsMemory();
+                    MemoryButton.Visibility = Visibility.Collapsed;
+
+                    if (m_IsLastFlyoutMemory && !IsProgrammer)
+                    {
+                        DockPivot.SelectedIndex = 1;
+                    }
+                }
+                else
+                {
+                    MemoryButton.Visibility = Visibility.Visible;
+                    DockMemoryHolder.Child = null;
                 }
             }
         }
 
-        void OnContextRequested(UIElement sender, ContextRequestedEventArgs e)
+        private void UpdateHistoryState()
         {
-            var requestedElement = (FrameworkElement)(e.OriginalSource);
+            if (DockPanel.Visibility == Visibility.Visible)
+            {
+                // docked view
+                CloseHistoryFlyout();
+                SetChildAsHistory();
 
-            // UNO TODO
-            // PasteMenuItem.IsEnabled = CopyPasteManager.HasStringToPaste();
+                if (!IsProgrammer && m_IsLastFlyoutHistory)
+                {
+                    DockPivot.SelectedIndex = 0;
+                }
+            }
+            else
+            {
+                // flyout view
+                DockHistoryHolder.Child = null;
+            }
+        }
 
-            if (e.TryGetPosition(requestedElement, out var point))
+        private void OnContextRequested(UIElement sender, ContextRequestedEventArgs e)
+        {
+            var requestedElement = (FrameworkElement)e.OriginalSource;
+
+            PasteMenuItem.IsEnabled = CopyPasteManager.HasStringToPaste();
+
+            if (e.TryGetPosition(requestedElement, out Point point))
             {
                 m_displayFlyout.ShowAt(requestedElement, point);
             }
@@ -288,23 +361,12 @@ namespace CalculatorApp
             e.Handled = true;
         }
 
-        void OnContextCanceled(UIElement sender, RoutedEventArgs e)
+        private void OnContextCanceled(UIElement sender, RoutedEventArgs e)
         {
             m_displayFlyout.Hide();
         }
 
-        void OnLayoutStateChanged(object sender, object e)
-        {
-            UpdatePanelViewState();
-        }
-
-        void OnIsStandardPropertyChanged(bool oldValue, bool newValue)
-        {
-            UpdateViewState();
-            UpdatePanelViewState();
-        }
-
-        void OnIsScientificPropertyChanged(bool oldValue, bool newValue)
+        private void OnIsScientificPropertyChanged(bool oldValue, bool newValue)
         {
             if (newValue)
             {
@@ -315,12 +377,12 @@ namespace CalculatorApp
             UpdatePanelViewState();
         }
 
-        void OnIsProgrammerPropertyChanged(bool oldValue, bool newValue)
+        private void OnIsProgrammerPropertyChanged(bool oldValue, bool newValue)
         {
             if (newValue)
             {
                 EnsureProgrammer();
-                m_pivotItem = (Windows.UI.Xaml.Controls.PivotItem)(DockPivot.Items[0]);
+                m_pivotItem = (PivotItem)DockPivot.Items[0];
                 DockPivot.Items.RemoveAt(0);
             }
             else
@@ -336,11 +398,40 @@ namespace CalculatorApp
             UpdatePanelViewState();
         }
 
-        void OnIsInErrorPropertyChanged()
+        private void OnIsStandardPropertyChanged(bool oldValue, bool newValue)
+        {
+            UpdateViewState();
+            UpdatePanelViewState();
+        }
+
+        private void OnIsAlwaysOnTopPropertyChanged(bool oldValue, bool newValue)
+        {
+            if (newValue)
+            {
+                VisualStateManager.GoToState(this, "DisplayModeAlwaysOnTop", false);
+                AlwaysOnTopResults.UpdateScrollButtons();
+            }
+            else
+            {
+                VisualStateManager.GoToState(this, "DisplayModeNormal", false);
+                if (!Model.IsInError)
+                {
+                    EnableMemoryControls(true);
+                }
+                Results.UpdateTextState();
+            }
+
+            Model.IsMemoryEmpty = (Model.MemorizedNumbers.Count == 0) || IsAlwaysOnTop;
+
+            UpdateViewState();
+            UpdatePanelViewState();
+        }
+
+        private void OnIsInErrorPropertyChanged()
         {
             bool isError = Model.IsInError;
 
-            String newState = isError ? "ErrorLayout" : "NoErrorLayout";
+            string newState = isError ? "ErrorLayout" : "NoErrorLayout";
             VisualStateManager.GoToState(this, newState, false);
 
             if (m_memory != null)
@@ -348,21 +439,36 @@ namespace CalculatorApp
                 m_memory.IsErrorVisualState = isError;
             }
 
-            // UNO TODO
-            // OpsPanel.IsErrorVisualState = isError;
-            // if (IsScientific && ScientificAngleButtons != null)
-            // {
-            //     ScientificAngleButtons.IsErrorVisualState = isError;
-            // }
-            // else if (IsProgrammer && ProgrammerDisplayPanel != null)
-            // {
-            //     ProgrammerDisplayPanel.IsErrorVisualState = isError;
-            // }
+            OpsPanel.IsErrorVisualState = isError;
+            if (IsScientific && ScientificAngleButtons != null)
+            {
+                ScientificAngleButtons.IsErrorVisualState = isError;
+            }
+            else if (IsProgrammer && ProgrammerDisplayPanel != null)
+            {
+                ProgrammerDisplayPanel.IsErrorVisualState = isError;
+            }
         }
 
-        // Once the storyboard that rearranges the buttons completed,
-        // We do the animation based on the Mode or Orientation change.
-        void OnStoryboardCompleted(object sender, object e)
+        private void OnCalcPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            string prop = e.PropertyName;
+            if (prop == StandardCalculatorViewModel.IsMemoryEmptyPropertyName)
+            {
+                UpdateMemoryState();
+            }
+            else if (prop == StandardCalculatorViewModel.IsInErrorPropertyName)
+            {
+                OnIsInErrorPropertyChanged();
+            }
+        }
+
+        private void OnLayoutVisualStateCompleted(object sender, object e)
+        {
+            UpdatePanelViewState();
+        }
+
+        private void OnModeVisualStateCompleted(object sender, object e)
         {
             m_isLastAnimatedInScientific = IsScientific;
             m_isLastAnimatedInProgrammer = IsProgrammer;
@@ -379,12 +485,29 @@ namespace CalculatorApp
                     AnimateWithoutResult.Begin();
                 }
             }
+            if (IsProgrammer)
+            {
+                AutomationProperties.SetName(DockPanel, m_dockPanelMemoryList);
+            }
+            else
+            {
+                AutomationProperties.SetName(DockPanel, m_dockPanelHistoryMemoryLists);
+            }
         }
 
-        void EnsureScientific()
+        private void OnErrorVisualStateCompleted(object sender, object e)
         {
-            // UNO TODO
-            // OpsPanel.EnsureScientificOps();
+            SetDefaultFocus();
+        }
+
+        private void OnDisplayVisualStateCompleted(object sender, object e)
+        {
+            SetDefaultFocus();
+        }
+
+        private void EnsureScientific()
+        {
+            OpsPanel.EnsureScientificOps();
 
             if (ScientificAngleButtons == null)
             {
@@ -392,7 +515,7 @@ namespace CalculatorApp
             }
         }
 
-        void EnsureProgrammer()
+        private void EnsureProgrammer()
         {
             if (ProgrammerOperators == null)
             {
@@ -404,141 +527,128 @@ namespace CalculatorApp
                 this.FindName("ProgrammerDisplayPanel");
             }
 
-            // UNO TODO
-            // OpsPanel.EnsureProgrammerRadixOps();
-            // ProgrammerOperators.SetRadixButton(Model.GetCurrentRadixType());
+            OpsPanel.EnsureProgrammerRadixOps();
+            ProgrammerOperators.SetRadixButton(Model.CurrentRadixType);
         }
 
-        void OnCalcPropertyChanged(object sender, PropertyChangedEventArgs e)
+        // Since we need different font sizes for different numeric system,
+        // we use a table of optimal font sizes for each numeric system.
+        private static readonly FontTable[] fontTables = new FontTable[] {
+            new FontTable { numericSystem = "Arab", fullFont = 104, fullFontMin = 29.333, portraitMin = 23, snapFont = 40,
+                            fullNumPadFont = 56, snapScientificNumPadFont = 40, portraitScientificNumPadFont = 56 },
+            new FontTable { numericSystem = "ArabExt", fullFont = 104, fullFontMin = 29.333, portraitMin = 23, snapFont = 40,
+                            fullNumPadFont = 56, snapScientificNumPadFont = 40, portraitScientificNumPadFont = 56 },
+            new FontTable { numericSystem = "Beng", fullFont = 104, fullFontMin = 26, portraitMin = 17, snapFont = 40,
+                            fullNumPadFont = 56, snapScientificNumPadFont = 40, portraitScientificNumPadFont = 56 },
+            new FontTable { numericSystem = "Deva", fullFont = 104, fullFontMin = 29.333, portraitMin = 20.5, snapFont = 40,
+                            fullNumPadFont = 56, snapScientificNumPadFont = 40, portraitScientificNumPadFont = 56 },
+            new FontTable { numericSystem = "Gujr", fullFont = 104, fullFontMin = 29.333, portraitMin = 18.5, snapFont = 40,
+                            fullNumPadFont = 56, snapScientificNumPadFont = 40, portraitScientificNumPadFont = 56 },
+            new FontTable { numericSystem = "Khmr", fullFont = 104, fullFontMin = 29.333, portraitMin = 19.5, snapFont = 40,
+                            fullNumPadFont = 56, snapScientificNumPadFont = 40, portraitScientificNumPadFont = 56 },
+            new FontTable { numericSystem = "Knda", fullFont = 104, fullFontMin = 25, portraitMin = 17, snapFont = 40,
+                            fullNumPadFont = 56, snapScientificNumPadFont = 40, portraitScientificNumPadFont = 56 },
+            new FontTable { numericSystem = "Laoo", fullFont = 104, fullFontMin = 28, portraitMin = 18, snapFont = 40,
+                            fullNumPadFont = 56, snapScientificNumPadFont = 40, portraitScientificNumPadFont = 56 },
+            new FontTable { numericSystem = "Latn", fullFont = 104, fullFontMin = 29.333, portraitMin = 23, snapFont = 40,
+                            fullNumPadFont = 56, snapScientificNumPadFont = 40, portraitScientificNumPadFont = 56 },
+            new FontTable { numericSystem = "Mlym", fullFont = 80, fullFontMin = 22, portraitMin = 15.5, snapFont = 30,
+                            fullNumPadFont = 56, snapScientificNumPadFont = 35, portraitScientificNumPadFont = 48 },
+            new FontTable { numericSystem = "Mymr", fullFont = 104, fullFontMin = 29.333, portraitMin = 20, snapFont = 35,
+                            fullNumPadFont = 48, snapScientificNumPadFont = 36, portraitScientificNumPadFont = 48 },
+            new FontTable { numericSystem = "Orya", fullFont = 88, fullFontMin = 26, portraitMin = 20, snapFont = 40,
+                            fullNumPadFont = 56, snapScientificNumPadFont = 40, portraitScientificNumPadFont = 56 },
+            new FontTable { numericSystem = "TamlDec", fullFont = 77, fullFontMin = 25, portraitMin = 16, snapFont = 28,
+                            fullNumPadFont = 48, snapScientificNumPadFont = 34, portraitScientificNumPadFont = 48 },
+            new FontTable { numericSystem = "Telu", fullFont = 104, fullFontMin = 25, portraitMin = 16.5, snapFont = 40,
+                            fullNumPadFont = 56, snapScientificNumPadFont = 40, portraitScientificNumPadFont = 56 },
+            new FontTable { numericSystem = "Thai", fullFont = 104, fullFontMin = 28, portraitMin = 18, snapFont = 40,
+                            fullNumPadFont = 56, snapScientificNumPadFont = 40, portraitScientificNumPadFont = 56 },
+            new FontTable { numericSystem = "Tibt", fullFont = 104, fullFontMin = 29.333, portraitMin = 20, snapFont = 40,
+                           fullNumPadFont =  56, snapScientificNumPadFont = 40, portraitScientificNumPadFont = 56 },
+            new FontTable { numericSystem = "Default", fullFont = 104, fullFontMin = 29.333, portraitMin = 23, snapFont = 40,
+                           fullNumPadFont =  56, snapScientificNumPadFont = 40, portraitScientificNumPadFont = 56 }
+        };
+
+        private void SetFontSizeResources()
         {
-            String prop = e.PropertyName;
-            if (prop == nameof(StandardCalculatorViewModel.IsMemoryEmpty))
+            DecimalFormatter formatter = LocalizationService.GetInstance().GetRegionalSettingsAwareDecimalFormatter();
+
+            int currentItemIdx = 0;
+            while (!fontTables[currentItemIdx].numericSystem.Equals("Default") &&
+                   !fontTables[currentItemIdx].numericSystem.Equals(formatter.NumeralSystem))
             {
-                UpdateMemoryState();
+                ++currentItemIdx;
             }
-            else if (prop == nameof(StandardCalculatorViewModel.IsMemoryEmpty))
+
+            var currentItem = fontTables[currentItemIdx];
+            this.Resources.Add("ResultFullFontSize", currentItem.fullFont);
+            this.Resources.Add("ResultFullMinFontSize", currentItem.fullFontMin);
+            this.Resources.Add("ResultPortraitMinFontSize", currentItem.portraitMin);
+            this.Resources.Add("ResultSnapFontSize", currentItem.snapFont);
+            this.Resources.Add("CalcButtonCaptionSizeOverride", currentItem.fullNumPadFont);
+            this.Resources.Add("CalcButtonScientificSnapCaptionSizeOverride", currentItem.snapScientificNumPadFont);
+            this.Resources.Add("CalcButtonScientificPortraitCaptionSizeOverride", currentItem.portraitScientificNumPadFont);
+        }
+
+        private string GetCurrentLayoutState()
+        {
+            if (IsProgrammer)
             {
-                OnIsInErrorPropertyChanged();
+                return "Programmer";
             }
-        }
-
-        public void UpdatePanelViewState()
-        {
-            UpdateHistoryState();
-            UpdateMemoryState();
-        }
-
-        void UpdateHistoryState()
-        {
-            String viewState = App.GetAppViewState();
-            if (viewState == ViewState.DockedView)
+            else if (IsScientific)
             {
-                // docked view
-                CloseHistoryFlyout();
-                SetChildAsHistory();
-                HistoryButton.Visibility = Visibility.Collapsed;
-
-                if (!IsProgrammer && m_IsLastFlyoutHistory)
-                {
-                    DockPivot.SelectedIndex = 0;
-                }
+                return "Scientific";
             }
             else
-            { // flyout view
-                DockHistoryHolder.Child = null;
-                if (!IsProgrammer)
-                {
-                    HistoryButton.Visibility = Visibility.Visible;
-                }
-            }
-        }
-
-        void UpdateMemoryState()
-        {
-            if (!Model.IsMemoryEmpty)
             {
-                MemRecall.IsEnabled = true;
-                ClearMemoryButton.IsEnabled = true;
-            }
-            else
-            {
-                MemRecall.IsEnabled = false;
-                ClearMemoryButton.IsEnabled = false;
-            }
-
-            String viewState = App.GetAppViewState();
-            if (viewState == ViewState.DockedView)
-            {
-                CloseMemoryFlyout();
-                SetChildAsMemory();
-                MemoryButton.Visibility = Visibility.Collapsed;
-
-                if (m_IsLastFlyoutMemory && !IsProgrammer)
-                {
-                    DockPivot.SelectedIndex = 1;
-                }
-            }
-            else
-            {
-                MemoryButton.Visibility = Visibility.Visible;
-                DockMemoryHolder.Child = null;
+                return "Standard";
             }
         }
 
-        void SetChildAsMemory()
+        private void Calculator_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            DockMemoryHolder.Child = GetMemory();
-        }
-
-        void SetChildAsHistory()
-        {
-            if (m_historyList == null)
+            if (Model.IsAlwaysOnTop)
             {
-                InitializeHistoryView(Model.HistoryVM);
+                AlwaysOnTopResults.UpdateScrollButtons();
             }
-
-            DockHistoryHolder.Child = m_historyList;
         }
 
-        void OnHideHistoryClicked()
-        {
-            ToggleHistoryFlyout(null);
-        }
+        private readonly Windows.UI.Xaml.Controls.MenuFlyout m_displayFlyout;
+        private bool m_doAnimate;
+        private bool m_resultAnimate;
+        private bool m_isLastAnimatedInScientific;
+        private bool m_isLastAnimatedInProgrammer;
+        private bool m_IsLastFlyoutMemory = false;
+        private bool m_IsLastFlyoutHistory = false;
 
-        void OnHistoryItemClicked(HistoryItemViewModel e)
-        {
-            int tokenSize;
-            Debug.Assert(e.GetTokens() != null);
-            e.GetTokens().GetSize(out tokenSize);
-            // TraceLogger.GetInstance().LogHistoryItemLoadBegin();
-            Model.SetHistoryExpressionDisplay(e.GetTokens(), e.GetCommands());
-            Model.SetExpressionDisplay(e.GetTokens(), e.GetCommands());
-            Model.SetPrimaryDisplay(e.Result, false);
-            Model.IsFToEEnabled = false;
+        private string m_openMemoryFlyoutAutomationName;
+        private string m_closeMemoryFlyoutAutomationName;
+        private string m_openHistoryFlyoutAutomationName;
+        private string m_closeHistoryFlyoutAutomationName;
+        private string m_dockPanelHistoryMemoryLists;
+        private string m_dockPanelMemoryList;
 
-            // TraceLogger.GetInstance().LogHistoryItemLoadEnd(tokenSize);
-            CloseHistoryFlyout();
-            this.Focus(FocusState.Programmatic);
-        }
+        private Windows.UI.Xaml.Controls.PivotItem m_pivotItem;
+        private Memory m_memory;
 
-        void HistoryFlyout_Opened(object sender, object args)
+        private void HistoryFlyout_Opened(object sender, object args)
         {
             m_fIsHistoryFlyoutOpen = true;
             m_IsLastFlyoutMemory = false;
             m_IsLastFlyoutHistory = true;
             EnableControls(false);
             AutomationProperties.SetName(HistoryButton, m_closeHistoryFlyoutAutomationName);
-            // TraceLogger.GetInstance().LogHistoryFlyoutOpenEnd(Model.HistoryVM.ItemSize);
-            // TraceLogger.GetInstance().LogHistoryBodyOpened();
         }
 
-        void HistoryFlyout_Closing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
+        private void HistoryFlyout_Closing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
         {
             // Set in the Closing event so the new name is available when the Flyout has Closed.
             AutomationProperties.SetName(HistoryButton, m_openHistoryFlyoutAutomationName);
         }
 
-        void HistoryFlyout_Closed(object sender, object args)
+        private void HistoryFlyout_Closed(object sender, object args)
         {
             // Ideally, this would be renamed in the Closing event because the Closed event is too late.
             // Closing is not available until RS1+ so we set the name again here for TH2 support.
@@ -550,89 +660,90 @@ namespace CalculatorApp
                 HistoryButton.Focus(FocusState.Programmatic);
             }
 
-            FullscreenFlyoutClosed();
+            FullscreenFlyoutClosed?.Invoke();
         }
 
-        void CloseHistoryFlyout()
+        private void OnHideHistoryClicked()
         {
+            ToggleHistoryFlyout(null);
+        }
+
+        private void OnHideMemoryClicked()
+        {
+            if (!m_fIsMemoryFlyoutOpen)
+            {
+                this.Focus(FocusState.Programmatic);
+            }
+
+            MemoryFlyout.Hide();
+        }
+
+        private void OnHistoryItemClicked(HistoryItemViewModel e)
+        {
+            Model.SelectHistoryItem(e);
+
+            CloseHistoryFlyout();
+            this.Focus(FocusState.Programmatic);
+        }
+
+        private void ToggleHistoryFlyout(object parameter)
+        {
+            if (Model.IsProgrammer || DockPanel.Visibility == Visibility.Visible)
+            {
+                return;
+            }
+
             if (m_fIsHistoryFlyoutOpen)
             {
                 HistoryFlyout.Hide();
             }
+            else
+            {
+                HistoryFlyout.Content = m_historyList;
+                m_historyList.RowHeight = new GridLength(NumpadPanel.ActualHeight);
+                FlyoutBase.ShowAttachedFlyout(HistoryButton);
+            }
         }
 
-        void CloseMemoryFlyout()
+        private void ToggleMemoryFlyout(object sender, RoutedEventArgs e)
         {
+            if (DockPanel.Visibility == Visibility.Visible)
+            {
+                return;
+            }
+
             if (m_fIsMemoryFlyoutOpen)
             {
                 MemoryFlyout.Hide();
             }
-        }
-
-        public void SetDefaultFocus()
-        {
-            Results.Focus(FocusState.Programmatic);
-        }
-
-        void ToggleHistoryFlyout(object parameter)
-        {
-            String viewState = App.GetAppViewState();
-            // If app starts correctly in snap mode and shortcut is used for history then we need to load history if not yet initialized.
-            if (viewState != ViewState.DockedView)
+            else
             {
-                if (m_fIsHistoryFlyoutOpen)
-                {
-                    HistoryFlyout.Hide();
-                }
-                else
-                {
-                    // TraceLogger.GetInstance().LogHistoryFlyoutOpenBegin(Model.HistoryVM.ItemSize);
-                    HistoryFlyout.Content = m_historyList;
-                    // UNO TODO
-                    // m_historyList.RowHeight = NumpadPanel.ActualHeight;
-                    FlyoutBase.ShowAttachedFlyout(HistoryButton);
-                }
+                MemoryFlyout.Content = GetMemory();
+                m_memory.RowHeight = new GridLength(NumpadPanel.ActualHeight);
+                FlyoutBase.ShowAttachedFlyout(MemoryButton);
             }
         }
 
-        void ToggleMemoryFlyout(object sender, object args)
-        {
-            String viewState = App.GetAppViewState();
-            if (viewState != ViewState.DockedView)
-            {
-                if (m_fIsMemoryFlyoutOpen)
-                {
-                    MemoryFlyout.Hide();
-                }
-                else
-                {
-                    // TraceLogger.GetInstance().LogMemoryFlyoutOpenBegin(Model.MemorizedNumbers.Size);
-                    MemoryFlyout.Content = GetMemory();
-                    // UNO TODO
-                    // m_memory.RowHeight = NumpadPanel.ActualHeight;
-                    FlyoutBase.ShowAttachedFlyout(MemoryButton);
-                }
-            }
-        }
+        private CalculatorApp.HistoryList m_historyList;
+        private bool m_fIsHistoryFlyoutOpen;
+        private bool m_fIsMemoryFlyoutOpen;
 
-        void OnMemoryFlyoutOpened(object sender, object args)
+        private void OnMemoryFlyoutOpened(object sender, object args)
         {
-            // TraceLogger.GetInstance().LogMemoryFlyoutOpenEnd(Model.MemorizedNumbers.Size);
             m_IsLastFlyoutMemory = true;
             m_IsLastFlyoutHistory = false;
             m_fIsMemoryFlyoutOpen = true;
             AutomationProperties.SetName(MemoryButton, m_closeMemoryFlyoutAutomationName);
             EnableControls(false);
-            // TraceLogger.GetInstance().LogMemoryBodyOpened();
         }
 
-        void OnMemoryFlyoutClosing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
+        private void OnMemoryFlyoutClosing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
         {
             // Set in the Closing event so the new name is available when the Flyout has Closed.
             AutomationProperties.SetName(MemoryButton, m_openMemoryFlyoutAutomationName);
         }
 
-        void OnMemoryFlyoutClosed(object sender, object args)
+        private void OnMemoryFlyoutClosed(object sender, object args)
         {
             // Ideally, this would be renamed in the Closing event because the Closed event is too late.
             // Closing is not available until RS1+ so we set the name again here for TH2 support.
@@ -644,33 +755,44 @@ namespace CalculatorApp
                 MemoryButton.Focus(FocusState.Programmatic);
             }
 
-            FullscreenFlyoutClosed();
+            FullscreenFlyoutClosed?.Invoke();
         }
 
-        Memory GetMemory()
+        private void SetChildAsMemory()
+        {
+            DockMemoryHolder.Child = GetMemory();
+        }
+
+        private void SetChildAsHistory()
+        {
+            if (m_historyList == null)
+            {
+                InitializeHistoryView(Model.HistoryVM);
+            }
+
+            DockHistoryHolder.Child = m_historyList;
+        }
+
+        private Memory GetMemory()
         {
             if (m_memory == null)
             {
                 m_memory = new Memory();
-                VisualStateManager.GoToState(m_memory, GetCurrentLayoutState(), true /*useTransitions*/);
+                VisualStateManager.GoToState(m_memory, GetCurrentLayoutState(), true);
             }
 
             return m_memory;
         }
 
-        void OnHideMemoryClicked()
+        private void EnableControls(bool enable)
         {
-            if (!m_fIsMemoryFlyoutOpen)
-            {
-                this.Focus(FocusState.Programmatic);
-            }
-
-            MemoryFlyout.Hide();
+            OpsPanel.IsEnabled = enable;
+            EnableMemoryControls(enable);
         }
 
-        void EnableMemoryControls(bool enable)
+        private void EnableMemoryControls(bool enable)
         {
-            memButton.IsEnabled = enable;
+            MemButton.IsEnabled = enable;
             MemMinus.IsEnabled = enable;
             MemPlus.IsEnabled = enable;
             if (!Model.IsMemoryEmpty)
@@ -680,15 +802,9 @@ namespace CalculatorApp
             }
         }
 
-        void EnableControls(bool enable)
+        private void OnMemoryFlyOutTapped(object sender, TappedRoutedEventArgs e)
         {
-            OpsPanel.IsEnabled = enable;
-            EnableMemoryControls(enable);
-        }
-
-        void OnMemoryFlyOutTapped(object sender, TappedRoutedEventArgs e)
-        {
-            Grid grid = (Grid)(sender);
+            Grid grid = (Grid)sender;
             Point point = e.GetPosition(null);
 
             if (point.Y < (grid.ActualHeight - NumpadPanel.ActualHeight))
@@ -697,9 +813,9 @@ namespace CalculatorApp
             }
         }
 
-        void OnHistoryFlyOutTapped(object sender, TappedRoutedEventArgs e)
+        private void OnHistoryFlyOutTapped(object sender, TappedRoutedEventArgs e)
         {
-            Grid grid = (Grid)(sender);
+            Grid grid = (Grid)sender;
             Point point = e.GetPosition(null);
 
             if (point.Y < (grid.ActualHeight - NumpadPanel.ActualHeight))
@@ -708,30 +824,7 @@ namespace CalculatorApp
             }
         }
 
-        bool IsValidRegularExpression(string str)
-        {
-            bool result = false;
-            string[] regexPatterns = new[] {
-               "[-]{0,1}[0-9]{0,}[.]{0,1}[0-9]{0,}",
-               "[-]{0,1}[0-9]{0,}[.]{0,1}[0-9]{0,}[e]{1}[+]{1}[0-9]{1,}",
-               "[-]{0,1}[0-9]{0,}[.]{0,1}[0-9]{0,}[e]{1}[-]{1}[0-9]{1,}",
-            };
-
-            var localizer = LocalizationSettings.GetInstance();
-            String englishString = localizer.GetEnglishValueFromLocalizedDigits(str);
-
-            for (int i = 0; i < 3; ++i)
-            {
-                if (Regex.Match(englishString, regexPatterns[i]).Success)
-                {
-                    result = true;
-                    break;
-                }
-            }
-            return result;
-        }
-
-        void DockPanelTapped(object sender, TappedRoutedEventArgs e)
+        private void DockPanelTapped(object sender, TappedRoutedEventArgs e)
         {
             int index = DockPivot.SelectedIndex;
             if (index == 1 && !IsProgrammer)
@@ -743,72 +836,25 @@ namespace CalculatorApp
             m_IsLastFlyoutHistory = false;
         }
 
-        public void UnregisterEventHandlers()
-        {
-            expressionText.UnregisterEventHandlers();
-        }
-
-        void OnErrorLayoutCompleted(object sender, object e)
-        {
-            SetDefaultFocus();
-        }
-
-        void OnHistoryAccessKeyInvoked(UIElement sender, AccessKeyInvokedEventArgs args)
+        private void OnHistoryAccessKeyInvoked(UIElement sender, AccessKeyInvokedEventArgs args)
         {
             DockPivot.SelectedItem = HistoryPivotItem;
         }
 
-        void OnMemoryAccessKeyInvoked(UIElement sender, AccessKeyInvokedEventArgs args)
+        private void OnMemoryAccessKeyInvoked(UIElement sender, AccessKeyInvokedEventArgs args)
         {
             DockPivot.SelectedItem = MemoryPivotItem;
         }
 
-        void DockPivot_SelectionChanged(object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)
+        private void OnVisualStateChanged(object sender, VisualStateChangedEventArgs e)
         {
-            if (DockPivot.SelectedIndex == 0)
+            if (!IsStandard && !IsScientific && !IsProgrammer)
             {
-                // TraceLogger.GetInstance().LogHistoryBodyOpened();
+                return;
             }
-            else
-            {
-                // TraceLogger.GetInstance().LogMemoryBodyOpened();
-            }
-        }
 
+            var mode = IsStandard ? ViewMode.Standard : IsScientific ? ViewMode.Scientific : ViewMode.Programmer;
+            TraceLogger.GetInstance().LogVisualStateChanged(mode, e.NewState.Name, IsAlwaysOnTop);
+        }
     }
-
-    delegate void FullscreenFlyoutClosedEventHandler();
-
-    struct FontTable
-    {
-        public FontTable(
-            string numericSystem,
-            double fullFont,
-            double fullFontMin,
-            double portraitMin,
-            double snapFont,
-            double fullNumPadFont,
-            double snapScientificNumPadFont,
-            double portraitScientificNumPadFont)
-        {
-            this.numericSystem = numericSystem;
-            this.fullFont = fullFont;
-            this.fullFontMin = fullFontMin;
-            this.portraitMin = portraitMin;
-            this.snapFont = snapFont;
-            this.fullNumPadFont = fullNumPadFont;
-            this.snapScientificNumPadFont = snapScientificNumPadFont;
-            this.portraitScientificNumPadFont = portraitScientificNumPadFont;
-        }
-
-        public string numericSystem;
-        public double fullFont;
-        public double fullFontMin;
-        public double portraitMin;
-        public double snapFont;
-        public double fullNumPadFont;
-        public double snapScientificNumPadFont;
-        public double portraitScientificNumPadFont;
-    };
-
 }

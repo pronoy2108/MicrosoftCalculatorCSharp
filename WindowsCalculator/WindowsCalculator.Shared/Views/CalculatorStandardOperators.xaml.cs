@@ -1,29 +1,22 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
-// The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
+//
+// CalculatorStandardOperators.xaml.h
+// Declaration of the CalculatorStandardOperators class
+//
+
+using Windows.UI.Xaml;
 
 namespace CalculatorApp
 {
-	public sealed partial class CalculatorStandardOperators : UserControl
-	{
-        private bool m_isErrorVisualState;
-
+    [Windows.Foundation.Metadata.WebHostHidden]
+    public sealed partial class CalculatorStandardOperators
+    {
         public CalculatorStandardOperators()
-		{
-			this.InitializeComponent();
+        {
+            m_isErrorVisualState = false;
+            InitializeComponent();
         }
 
         public bool IsErrorVisualState
@@ -34,11 +27,12 @@ namespace CalculatorApp
                 if (m_isErrorVisualState != value)
                 {
                     m_isErrorVisualState = value;
-                    String newState = m_isErrorVisualState ? "ErrorLayout" : "NoErrorLayout";
+                    string newState = m_isErrorVisualState ? "ErrorLayout" : "NoErrorLayout";
                     VisualStateManager.GoToState(this, newState, false);
                     NumberPad.IsErrorVisualState = m_isErrorVisualState;
                 }
             }
         }
+        private bool m_isErrorVisualState;
     }
 }

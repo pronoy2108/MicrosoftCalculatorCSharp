@@ -1,124 +1,101 @@
-using CalculationManager;
-using CalculatorApp;
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 using CalculatorApp.Controls;
 using CalculatorApp.ViewModel;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.Core;
-using Windows.UI.ViewManagement;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
+using CalculatorApp.ViewModel.Common;
 
-// The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
+using System.Diagnostics;
+
+using Windows.UI.Xaml;
 
 namespace CalculatorApp
 {
-    public sealed partial class CalculatorProgrammerOperators : UserControl
+    [Windows.Foundation.Metadata.WebHostHidden]
+    public sealed partial class CalculatorProgrammerOperators
     {
-        public StandardCalculatorViewModel Model => (StandardCalculatorViewModel)(this.DataContext);
+        public CalculatorProgrammerOperators()
+        {
+            InitializeComponent();
+
+            CopyMenuItem.Text = AppResourceProvider.GetInstance().GetResourceString("copyMenuItem");
+        }
+
+        public StandardCalculatorViewModel Model => (StandardCalculatorViewModel)this.DataContext;
 
         public Style SymbolButtonStyle
         {
-            get { return (Style)GetValue(SymbolButtonStyleProperty); }
-            set { SetValue(SymbolButtonStyleProperty, value); }
+            get => (Style)GetValue(SymbolButtonStyleProperty);
+            set => SetValue(SymbolButtonStyleProperty, value);
         }
 
         // Using a DependencyProperty as the backing store for SymbolButtonStyle.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SymbolButtonStyleProperty =
-            DependencyProperty.Register("SymbolButtonStyle", typeof(Style), typeof(CalculatorProgrammerOperators), new PropertyMetadata(null));
+            DependencyProperty.Register(nameof(SymbolButtonStyle), typeof(Style), typeof(CalculatorProgrammerOperators), new PropertyMetadata(default(Style)));
 
-
-        public CalculatorProgrammerOperators()
+        internal void SetRadixButton(NumberBase numberBase)
         {
-            this.InitializeComponent();
-
-            // UNO TODO
-            // CopyMenuItem.Text = AppResourceProvider.GetInstance().GetResourceString("copyMenuItem");
-        }
-
-        void HexButtonChecked(object sender, RoutedEventArgs e)
-        {
-            // TraceLogger.GetInstance().LogRadixButtonUsed(ApplicationView.GetApplicationViewIdForWindow(CoreWindow.GetForCurrentThread()));
-            if (Model != null)
+            switch (numberBase)
             {
-                Model.SwitchProgrammerModeBase(RADIX_TYPE.HEX_RADIX);
-            }
-        }
-
-        void DecButtonChecked(object sender, RoutedEventArgs e)
-        {
-            // TraceLogger.GetInstance().LogRadixButtonUsed(ApplicationView.GetApplicationViewIdForWindow(CoreWindow.GetForCurrentThread()));
-            if (Model != null)
-            {
-                Model.SwitchProgrammerModeBase(RADIX_TYPE.DEC_RADIX);
-            }
-        }
-
-        void OctButtonChecked(object sender, RoutedEventArgs e)
-        {
-            // TraceLogger.GetInstance().LogRadixButtonUsed(ApplicationView.GetApplicationViewIdForWindow(CoreWindow.GetForCurrentThread()));
-            if (Model != null)
-            {
-                Model.SwitchProgrammerModeBase(RADIX_TYPE.OCT_RADIX);
-            }
-        }
-
-        void BinButtonChecked(object sender, RoutedEventArgs e)
-        {
-            // TraceLogger.GetInstance().LogRadixButtonUsed(ApplicationView.GetApplicationViewIdForWindow(CoreWindow.GetForCurrentThread()));
-            if (Model != null)
-            {
-                Model.SwitchProgrammerModeBase(RADIX_TYPE.BIN_RADIX);
-            }
-        }
-
-        void SetRadixButton(RADIX_TYPE radixType)
-        {
-            switch (radixType)
-            {
-                case RADIX_TYPE.DEC_RADIX:
-                    {
-                        decimalButton.IsChecked = true;
-                        break;
-                    }
-                case RADIX_TYPE.HEX_RADIX:
-                    {
-                        hexButton.IsChecked = true;
-                        break;
-                    }
-                case RADIX_TYPE.OCT_RADIX:
-                    {
-                        octButton.IsChecked = true;
-                        break;
-                    }
-                case RADIX_TYPE.BIN_RADIX:
-                    {
-                        binaryButton.IsChecked = true;
-                        break;
-                    }
+                case NumberBase.DecBase:
+                    DecimalButton.IsChecked = true;
+                    break;
+                case NumberBase.HexBase:
+                    HexButton.IsChecked = true;
+                    break;
+                case NumberBase.OctBase:
+                    OctButton.IsChecked = true;
+                    break;
+                case NumberBase.BinBase:
+                    BinaryButton.IsChecked = true;
+                    break;
                 default:
                     Debug.Assert(false);
                     break;
             }
         }
 
-        void OnCopyMenuItemClicked(object sender, RoutedEventArgs e)
+        private void DecButtonChecked(object sender, RoutedEventArgs e)
         {
-            // UNO TODO 
-            // var source = (RadixButton)(ProgrammerOperatorsContextMenu.Target);
+            TraceLogger.GetInstance().UpdateButtonUsage(NumbersAndOperatorsEnum.DecButton, ViewMode.Programmer);
+            if (Model != null)
+            {
+                Model.SwitchProgrammerModeBase(NumberBase.DecBase);
+            }
+        }
 
-            // CopyPasteManager.CopyToClipboard(source.GetRawDisplayValue());
+        private void HexButtonChecked(object sender, RoutedEventArgs e)
+        {
+            TraceLogger.GetInstance().UpdateButtonUsage(NumbersAndOperatorsEnum.HexButton, ViewMode.Programmer);
+            if (Model != null)
+            {
+                Model.SwitchProgrammerModeBase(NumberBase.HexBase);
+            }
+        }
+
+        private void BinButtonChecked(object sender, RoutedEventArgs e)
+        {
+            TraceLogger.GetInstance().UpdateButtonUsage(NumbersAndOperatorsEnum.BinButton, ViewMode.Programmer);
+            if (Model != null)
+            {
+                Model.SwitchProgrammerModeBase(NumberBase.BinBase);
+            }
+        }
+
+        private void OctButtonChecked(object sender, RoutedEventArgs e)
+        {
+            TraceLogger.GetInstance().UpdateButtonUsage(NumbersAndOperatorsEnum.OctButton, ViewMode.Programmer);
+            if (Model != null)
+            {
+                Model.SwitchProgrammerModeBase(NumberBase.OctBase);
+            }
+        }
+
+        private void OnCopyMenuItemClicked(object sender, RoutedEventArgs e)
+        {
+            var source = (RadixButton)ProgrammerOperatorsContextMenu.Target;
+
+            CopyPasteManager.CopyToClipboard(source.GetRawDisplayValue());
         }
     }
 }
